@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/session";
 
@@ -26,9 +27,9 @@ async function DashboardContent() {
 
   const firstName = user.name?.split(" ")[0] ?? "dev";
 
-  const steps = [
+  const steps: { label: string; done: boolean; href?: string }[] = [
     { label: "Fazer login", done: true },
-    { label: "Preencher o perfil", done: Boolean(profile) },
+    { label: "Preencher o perfil", done: Boolean(profile), href: "/perfil" },
     { label: "Cadastrar o currículo", done: resumeCount > 0 },
   ];
 
@@ -54,7 +55,16 @@ async function DashboardContent() {
             >
               {s.done ? "✓" : ""}
             </span>
-            <span className={s.done ? "text-zinc-500 line-through" : ""}>{s.label}</span>
+            {s.href ? (
+              <Link
+                href={s.href}
+                className={`hover:underline ${s.done ? "text-zinc-500 line-through" : "text-emerald-700 dark:text-emerald-400"}`}
+              >
+                {s.label}
+              </Link>
+            ) : (
+              <span className={s.done ? "text-zinc-500 line-through" : ""}>{s.label}</span>
+            )}
           </li>
         ))}
       </ul>
