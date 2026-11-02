@@ -9,6 +9,8 @@ import { UFS } from "@/lib/profile";
 import { toPostingData, prepareJob } from "@/server/jobs/ingest";
 import { buildQueryFromProfile, DEFAULT_PROFILE_FOR_QUERY } from "@/server/jobs/query";
 import { runScan, type ScanSummary } from "@/server/jobs/scan";
+import { AiProviderError } from "@/server/ai/provider";
+import { evaluatePostingForUser } from "@/server/ai/match/service";
 
 export type ScanNowResult = { summaries: ScanSummary[]; message?: string };
 
@@ -132,4 +134,45 @@ export async function createManualJob(_prev: ManualJobState, formData: FormData)
   });
   revalidatePath("/vagas");
   redirect(`/vagas/${created.id}`);
+}
+
+export type EvaluateJobState = { ok: boolean; message?: string };
+
+const postingIdSchema = z.string().regex(/^[a-z0-9]{10,40}$/i);
+
+/**
+ * Avalia UMA vaga com IA para o usuário logado (o lote fica no script `npm run match`).
+ * O dono do currículo/perfil vem da sessão; a vaga só é aceita se for visível ao usuário.
+ */
+export async function evaluateJob(postingId: string, force: boolean): Promise<EvaluateJobState> {
+  const user = await requireUser();
+  const id = postingIdSchema.safeParse(postingId);
+  if (!id.success) return { ok: false, message: "Vaga inválida." };
+
+  try {
+    const out = await evaluatePostingForUser(user.id, id.data, { force: force === true });
+    revalidatePath(`/vagas/${id.data}`);
+    revalidatePath("/vagas");
+    revalidatePath("/dashboard");
+    switch (out.status) {
+      case "evaluated":
+      case "cached":
+        return { ok: true };
+      case "prefiltered":
+        return { ok: false, message: out.reason };
+      case "invalid":
+        return { ok: false, message: "A IA devolveu uma resposta fora do formato duas vezes. Tente de novo mais tarde." };
+      case "unavailable":
+        return {
+          ok: false,
+          message:
+            out.reason === "no-profile" ? "Preencha o perfil antes de avaliar." : out.reason === "no-resume" ? "Cadastre um currículo principal antes de avaliar." : "Vaga não encontrada.",
+        };
+    }
+  } catch (error) {
+    // Só o nome/mensagem genérica do erro: nunca prompt ou CV.
+    console.error("Falha na avaliação de IA:", error instanceof Error ? error.name : "erro");
+    if (error instanceof AiProviderError) return { ok: false, message: error.message };
+    return { ok: false, message: "Não foi possível avaliar agora. Tente novamente." };
+  }
 }

@@ -5,6 +5,9 @@ import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/session";
 import { SENIORITIES, WORK_MODES } from "@/lib/profile";
 import { buildJobsWhere, daysAgoLabel, filtersToQuery, isHttpUrl, PAGE_SIZE, parseFilters } from "@/server/jobs/list";
+import { MatchBadge } from "@/components/match-badge";
+import { prefilterPosting } from "@/server/ai/prefilter";
+import { PROMPT_VERSION } from "@/server/ai/match/prompts/match-v1";
 import { ScanButton } from "./scan-button";
 
 /**
@@ -38,27 +41,53 @@ async function VagasContent({ searchParams }: { searchParams: PageProps<"/vagas"
   const user = await requireUser();
   const filters = parseFilters(await searchParams);
 
-  const profile = await prisma.candidateProfile.findUnique({
-    where: { userId: user.id },
-    select: { excludeKeywords: true, seniority: true },
-  });
-  const where = buildJobsWhere(filters, user.id, profile);
+  const [profile, resume] = await Promise.all([
+    prisma.candidateProfile.findUnique({
+      where: { userId: user.id },
+      select: { excludeKeywords: true, seniority: true, workModes: true },
+    }),
+    prisma.resume.findFirst({ where: { userId: user.id, isPrimary: true }, select: { id: true } }),
+  ]);
+  const scope = resume ? { resumeId: resume.id, promptVersion: PROMPT_VERSION } : undefined;
+  const where = buildJobsWhere(filters, user.id, profile, scope);
+
+  // Avaliações válidas (CV principal + versão atual do prompt) deste usuário, por vaga.
+  const matchRows = resume
+    ? await prisma.jobMatch.findMany({
+        where: { userId: user.id, resumeId: resume.id, promptVersion: PROMPT_VERSION },
+        select: { postingId: true, score: true, recommendation: true },
+      })
+    : [];
+  const matches = new Map(matchRows.map((m) => [m.postingId, { score: Number(m.score), recommendation: m.recommendation }]));
+
+  const jobSelect = {
+    id: true, title: true, company: true, location: true, workMode: true, seniority: true,
+    originalUrl: true, publishedAt: true, lastSeenAt: true, addedByUserId: true, status: true, description: true,
+    source: { select: { name: true } },
+  } as const;
+  const defaultOrder = [{ publishedAt: { sort: "desc" as const, nulls: "last" as const } }, { firstSeenAt: "desc" as const }];
+
+  // Ordenar por nota: a nota vive em outra tabela, então ordenamos os ids em memória e paginamos.
+  async function loadPage() {
+    if (filters.sort !== "score") {
+      return prisma.jobPosting.findMany({ where, orderBy: defaultOrder, skip: (filters.page - 1) * PAGE_SIZE, take: PAGE_SIZE, select: jobSelect });
+    }
+    const all = await prisma.jobPosting.findMany({ where, orderBy: defaultOrder, select: { id: true } });
+    const ordered = all
+      .map((j, index) => ({ id: j.id, index, score: matches.get(j.id)?.score ?? -1 }))
+      .sort((a, b) => b.score - a.score || a.index - b.index)
+      .slice((filters.page - 1) * PAGE_SIZE, filters.page * PAGE_SIZE)
+      .map((j) => j.id);
+    const rows = await prisma.jobPosting.findMany({ where: { id: { in: ordered } }, select: jobSelect });
+    const byId = new Map(rows.map((r) => [r.id, r]));
+    return ordered.flatMap((id) => (byId.has(id) ? [byId.get(id)!] : []));
+  }
 
   const [sources, total, totalAll, jobs, runs] = await Promise.all([
     prisma.jobSource.findMany({ orderBy: { name: "asc" }, select: { slug: true, name: true } }),
     prisma.jobPosting.count({ where }),
-    prisma.jobPosting.count({ where: buildJobsWhere({ ...filters, q: "", source: "", mode: "", level: "", status: "ALL", compat: false }, user.id, null) }),
-    prisma.jobPosting.findMany({
-      where,
-      orderBy: [{ publishedAt: { sort: "desc", nulls: "last" } }, { firstSeenAt: "desc" }],
-      skip: (filters.page - 1) * PAGE_SIZE,
-      take: PAGE_SIZE,
-      select: {
-        id: true, title: true, company: true, location: true, workMode: true, seniority: true,
-        originalUrl: true, publishedAt: true, lastSeenAt: true, addedByUserId: true,
-        source: { select: { name: true } },
-      },
-    }),
+    prisma.jobPosting.count({ where: buildJobsWhere({ ...filters, q: "", source: "", mode: "", level: "", status: "ALL", compat: false, recommended: false }, user.id, null) }),
+    loadPage(),
     prisma.scanRun.findMany({
       orderBy: { startedAt: "desc" },
       take: 6,
@@ -71,7 +100,7 @@ async function VagasContent({ searchParams }: { searchParams: PageProps<"/vagas"
 
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const now = new Date();
-  const hasFilters = Boolean(filters.q || filters.source || filters.mode || filters.level);
+  const hasFilters = Boolean(filters.q || filters.source || filters.mode || filters.level || filters.recommended);
 
   return (
     <div>
@@ -134,6 +163,17 @@ async function VagasContent({ searchParams }: { searchParams: PageProps<"/vagas"
             <option value="0">Não, mostrar todas</option>
           </select>
         </label>
+        <label className="text-sm">
+          <span className="mb-1 block text-zinc-500">Ordenar por</span>
+          <select name="sort" defaultValue={filters.sort} className={selectClass}>
+            <option value="recent">Mais recentes</option>
+            <option value="score">Maior nota</option>
+          </select>
+        </label>
+        <label className="flex items-end gap-2 pb-2 text-sm">
+          <input type="checkbox" name="recommended" value="1" defaultChecked={filters.recommended} className="size-4 accent-emerald-600" />
+          <span>Somente recomendadas</span>
+        </label>
         <div className="flex items-end gap-2">
           <button type="submit" className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200">
             Filtrar
@@ -180,6 +220,8 @@ async function VagasContent({ searchParams }: { searchParams: PageProps<"/vagas"
               ? `Publicada ${daysAgoLabel(job.publishedAt, now)}`
               : `Vista ${daysAgoLabel(job.lastSeenAt, now)}`;
             const badges = [modeLabel(job.workMode), levelLabel(job.seniority)].filter(Boolean);
+            const match = matches.get(job.id);
+            const pre = !match && profile ? prefilterPosting(job, profile) : null;
             return (
               <li key={job.id} className="px-4 py-3">
                 <Link href={`/vagas/${job.id}`} className="font-medium break-words hover:underline">{job.title}</Link>
@@ -188,6 +230,15 @@ async function VagasContent({ searchParams }: { searchParams: PageProps<"/vagas"
                   {job.location && ` · ${job.location}`}
                 </p>
                 <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-zinc-500">
+                  {match ? (
+                    <MatchBadge score={match.score} recommendation={match.recommendation} />
+                  ) : pre && !pre.pass ? (
+                    <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400" title={pre.reason}>
+                      Descartada: {pre.reason}
+                    </span>
+                  ) : (
+                    <span className="rounded-full border border-dashed border-zinc-300 px-2 py-0.5 dark:border-zinc-700">Não avaliada</span>
+                  )}
                   {badges.map((b) => (
                     <span key={b} className="rounded-full bg-zinc-100 px-2 py-0.5 dark:bg-zinc-800">{b}</span>
                   ))}

@@ -4,7 +4,7 @@ import { buildQueryFromProfile } from "@/server/jobs/query";
 
 describe("parseFilters", () => {
   it("usa padrões seguros: abertas, compatíveis ligado, página 1", () => {
-    expect(parseFilters({})).toEqual({ q: "", source: "", mode: "", level: "", status: "OPEN", compat: true, page: 1 });
+    expect(parseFilters({})).toEqual({ q: "", source: "", mode: "", level: "", status: "OPEN", compat: true, sort: "recent", recommended: false, page: 1 });
   });
 
   it("descarta valores inválidos e aceita os válidos", () => {

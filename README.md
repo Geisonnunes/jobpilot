@@ -9,7 +9,7 @@ O JobPilot encontra vagas, avalia a compatibilidade com o seu CV e prepara a can
 - Next.js 16 (App Router) + React 19 + TypeScript + Tailwind CSS 4
 - PostgreSQL 17 + Prisma 7 (driver adapter `@prisma/adapter-pg`)
 - Zod para validar env e respostas da IA
-- Claude API (a partir da Fase 3)
+- IA: Claude Code local (`claude-cli`, padrão) ou Claude API (`anthropic-api`), na Fase 3
 - Fila + workers em TypeScript (a partir da Fase 2)
 
 ## Como rodar
@@ -55,7 +55,7 @@ src/
     prisma.ts          # instância única do Prisma Client
   server/
     connectors/        # um conector por fonte de vagas (Fase 2)
-    ai/                # prompts e chamadas à Claude API (Fase 3)
+    ai/                # provedores de IA, pré-filtro e matching (Fase 3)
     jobs/              # definição das tarefas da fila
   workers/             # processos de segundo plano
 docker-compose.yml     # Postgres local
@@ -90,6 +90,41 @@ npm test                                               # testes (vitest), sem ac
 - Código portado do Career Ops (MIT): veja `THIRD_PARTY_NOTICES.md`.
 - Só para desenvolvimento: com `JOBPILOT_RECORD_DIR=<pasta>` (por exemplo em `.env.local`) as respostas cruas das
   fontes são gravadas nessa pasta, para criar fixtures de teste.
+
+## Matching com IA (Fase 3)
+
+Cada vaga é comparada com o seu perfil e o seu currículo principal: nota de 1,0 a 5,0, recomendação
+(`APPLY`, `MAYBE`, `SKIP`), cinco dimensões com justificativa, skills encontradas (com o trecho literal do CV),
+skills que faltam e alertas. O resultado fica em `JobMatch`; cada chamada fica em `AiUsage`.
+
+```bash
+npm run match [-- --limit=N] [-- --posting=<id>] [-- --force]   # lote pela linha de comando
+```
+
+Na interface: botão **Avaliar compatibilidade** em `/vagas/[id]` (uma vaga por vez; o lote é só pelo script).
+
+### Provedor de IA (`AI_PROVIDER`)
+
+| Valor | O que faz | Custo |
+|---|---|---|
+| `claude-cli` (padrão) | Executa o Claude Code em modo headless na sua máquina, com a sua assinatura. Precisa do `claude` instalado e logado. | Sem custo de API |
+| `anthropic-api` | Claude API pelo SDK oficial. Exige `ANTHROPIC_API_KEY`. Respeita `AI_MONTHLY_BUDGET_USD`. | Por uso |
+
+Trocar de provedor é só mudar `AI_PROVIDER` no `.env`. Outras variáveis (todas opcionais): `AI_MODEL_MATCH`
+(vazio = padrão do provedor), `CLAUDE_CLI_PATH` (precisa ser um `.exe`/binário, não `.cmd`) e
+`AI_MAX_EVALUATIONS_PER_RUN` (padrão 10). Os preços usados no orçamento da API estão em `src/server/ai/pricing.ts`
+e precisam ser conferidos na página oficial de preços.
+
+### Segurança e privacidade da IA
+
+- O CV vai à IA **sem** e-mail, telefone, CPF, endereço, links e nome (`redactPii`). Vaga e CV vão como dados delimitados,
+  e o prompt manda ignorar instruções contidas neles.
+- `claude-cli`: sem shell, prompt pelo stdin, pasta temporária vazia como diretório de trabalho (apagada depois),
+  todas as ferramentas desativadas, sessão não persistida, timeout de 120 s.
+- Toda `evidence` de skill precisa existir literalmente no CV; as que não existem são removidas. A recomendação final é
+  recalculada no código a partir da nota mínima do perfil.
+- Vagas barradas por regras simples (encerrada, palavra excluída no título, senioridade ou modalidade incompatível,
+  descrição curta) não chamam a IA.
 
 ## Regras do projeto
 

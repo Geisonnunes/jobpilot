@@ -18,6 +18,10 @@ export interface JobFilters {
   status: StatusFilter;
   /** "Compatíveis com meu perfil": ligado por padrão. */
   compat: boolean;
+  /** "recent" (padrão) ou "score": ordena pela nota da avaliação de IA. */
+  sort: "recent" | "score";
+  /** "Somente recomendadas": avaliações APPLY. */
+  recommended: boolean;
   page: number;
 }
 
@@ -36,6 +40,8 @@ export function parseFilters(params: RawParams): JobFilters {
     level: (SENIORITY_ORDER as string[]).includes(level) ? (level as Seniority) : "",
     status: (STATUSES as readonly string[]).includes(status) ? (status as StatusFilter) : "OPEN",
     compat: first(params.compat) !== "0",
+    sort: first(params.sort) === "score" ? "score" : "recent",
+    recommended: first(params.recommended) === "1",
     page: Number.isInteger(page) && page > 0 ? Math.min(page, 10_000) : 1,
   };
 }
@@ -50,7 +56,13 @@ export interface ProfileForFilter {
  * "Compatíveis": esconde vagas cujo TÍTULO contém uma palavra de exclusão ou cuja
  * senioridade é maior que a desejada (vagas sem senioridade definida continuam aparecendo).
  */
-export function buildJobsWhere(filters: JobFilters, userId: string, profile: ProfileForFilter | null): Prisma.JobPostingWhereInput {
+export function buildJobsWhere(
+  filters: JobFilters,
+  userId: string,
+  profile: ProfileForFilter | null,
+  /** CV principal + versão do prompt: define quais avaliações contam em "Somente recomendadas". */
+  matchScope?: { resumeId: string; promptVersion: string },
+): Prisma.JobPostingWhereInput {
   const and: Prisma.JobPostingWhereInput[] = [{ OR: [{ addedByUserId: null }, { addedByUserId: userId }] }];
 
   if (filters.q) {
@@ -60,6 +72,14 @@ export function buildJobsWhere(filters: JobFilters, userId: string, profile: Pro
   if (filters.mode) and.push({ workMode: filters.mode });
   if (filters.level) and.push({ seniority: filters.level });
   if (filters.status !== "ALL") and.push({ status: filters.status });
+  if (filters.recommended) {
+    // Sem CV principal não há avaliação válida: a lista fica vazia (e não mostra tudo por engano).
+    and.push(
+      matchScope
+        ? { matches: { some: { userId, resumeId: matchScope.resumeId, promptVersion: matchScope.promptVersion, recommendation: "APPLY" } } }
+        : { id: "" },
+    );
+  }
 
   if (filters.compat && profile) {
     const keywords = profile.excludeKeywords.map((k) => k.trim()).filter(Boolean);
@@ -80,6 +100,8 @@ export function filtersToQuery(filters: JobFilters, overrides: Partial<JobFilter
   if (f.level) p.set("level", f.level);
   if (f.status !== "OPEN") p.set("status", f.status);
   if (!f.compat) p.set("compat", "0");
+  if (f.sort === "score") p.set("sort", "score");
+  if (f.recommended) p.set("recommended", "1");
   if (f.page > 1) p.set("page", String(f.page));
   const s = p.toString();
   return s ? `?${s}` : "";

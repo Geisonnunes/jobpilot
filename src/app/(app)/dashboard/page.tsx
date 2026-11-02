@@ -2,6 +2,8 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/session";
+import { MatchBadge } from "@/components/match-badge";
+import { PROMPT_VERSION } from "@/server/ai/match/prompts/match-v1";
 
 /**
  * Página síncrona: a leitura da sessão e do banco acontece em DashboardContent,
@@ -19,11 +21,22 @@ export default function DashboardPage() {
 async function DashboardContent() {
   const user = await requireUser();
 
-  const [profile, resumeCount, sources] = await Promise.all([
+  const [profile, resumeCount, sources, primaryResume] = await Promise.all([
     prisma.candidateProfile.findUnique({ where: { userId: user.id } }),
     prisma.resume.count({ where: { userId: user.id } }),
     prisma.jobSource.findMany({ where: { enabled: true }, orderBy: { name: "asc" } }),
+    prisma.resume.findFirst({ where: { userId: user.id, isPrimary: true }, select: { id: true } }),
   ]);
+
+  // Melhores vagas: 5 maiores notas (CV principal + versão atual do prompt), só de vagas ainda abertas.
+  const topMatches = primaryResume
+    ? await prisma.jobMatch.findMany({
+        where: { userId: user.id, resumeId: primaryResume.id, promptVersion: PROMPT_VERSION, posting: { status: { not: "CLOSED" } } },
+        orderBy: [{ score: "desc" }, { createdAt: "desc" }],
+        take: 5,
+        select: { score: true, recommendation: true, posting: { select: { id: true, title: true, company: true } } },
+      })
+    : [];
 
   const firstName = user.name?.split(" ")[0] ?? "dev";
 
@@ -68,6 +81,28 @@ async function DashboardContent() {
           </li>
         ))}
       </ul>
+
+      <h2 className="mt-10 text-sm font-medium text-zinc-500 uppercase">Melhores vagas</h2>
+      {topMatches.length === 0 ? (
+        <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">
+          Nenhuma vaga avaliada ainda. Abra uma vaga em{" "}
+          <Link href="/vagas" className="text-emerald-700 underline dark:text-emerald-400">Vagas</Link> e clique em “Avaliar compatibilidade”.
+        </p>
+      ) : (
+        <ul className="mt-3 divide-y divide-zinc-200 rounded-xl border border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
+          {topMatches.map((m) => (
+            <li key={m.posting.id} className="flex items-center justify-between gap-3 px-4 py-3">
+              <div className="min-w-0">
+                <Link href={`/vagas/${m.posting.id}`} className="font-medium break-words hover:underline">{m.posting.title}</Link>
+                <p className="text-sm break-words text-zinc-600 dark:text-zinc-400">{m.posting.company}</p>
+              </div>
+              <div className="shrink-0">
+                <MatchBadge score={Number(m.score)} recommendation={m.recommendation} />
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
 
       <h2 className="mt-10 text-sm font-medium text-zinc-500 uppercase">Fontes de vagas ativas</h2>
       <div className="mt-3 flex flex-wrap gap-2">

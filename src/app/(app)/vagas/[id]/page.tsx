@@ -5,6 +5,10 @@ import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/session";
 import { SENIORITIES, WORK_MODES } from "@/lib/profile";
 import { daysAgoLabel, isHttpUrl } from "@/server/jobs/list";
+import { prefilterPosting } from "@/server/ai/prefilter";
+import { PROMPT_VERSION } from "@/server/ai/match/prompts/match-v1";
+import { EvaluateButton } from "./evaluate-button";
+import { MatchPanel } from "./match-panel";
 
 /** Detalhes de uma vaga. A descrição é texto puro: nunca é renderizada como HTML. */
 export default function JobDetailPage({ params }: PageProps<"/vagas/[id]">) {
@@ -28,6 +32,18 @@ async function JobDetail({ params }: { params: PageProps<"/vagas/[id]">["params"
     include: { source: { select: { name: true, slug: true } } },
   });
   if (!job) notFound();
+
+  const [profile, resume] = await Promise.all([
+    prisma.candidateProfile.findUnique({ where: { userId: user.id }, select: { excludeKeywords: true, seniority: true, workModes: true } }),
+    prisma.resume.findFirst({ where: { userId: user.id, isPrimary: true }, select: { id: true } }),
+  ]);
+  const match = resume
+    ? await prisma.jobMatch.findUnique({
+        where: { userId_postingId_resumeId_promptVersion: { userId: user.id, postingId: job.id, resumeId: resume.id, promptVersion: PROMPT_VERSION } },
+        select: { id: true, score: true, recommendation: true, summary: true, dimensions: true, missingSkills: true, redFlags: true, promptVersion: true, model: true, createdAt: true },
+      })
+    : null;
+  const prefilter = profile ? prefilterPosting(job, profile) : null;
 
   const now = new Date();
   const badges = [
@@ -65,6 +81,34 @@ async function JobDetail({ params }: { params: PageProps<"/vagas/[id]">["params"
         >
           Ver anúncio original ↗
         </a>
+      )}
+
+      {match ? (
+        <MatchPanel postingId={job.id} match={match} />
+      ) : (
+        <section aria-labelledby="match-title" className="mt-8 rounded-xl border border-zinc-200 p-4 dark:border-zinc-800">
+          <h2 id="match-title" className="text-sm font-medium text-zinc-500 uppercase">Avaliação de compatibilidade</h2>
+          {!profile ? (
+            <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">
+              Para avaliar, <Link href="/perfil" className="text-emerald-700 underline dark:text-emerald-400">preencha o seu perfil</Link>.
+            </p>
+          ) : !resume ? (
+            <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">
+              Para avaliar, <Link href="/curriculo" className="text-emerald-700 underline dark:text-emerald-400">cadastre um currículo e marque-o como principal</Link>.
+            </p>
+          ) : prefilter && !prefilter.pass ? (
+            <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">
+              <span className="font-medium">Descartada no pré-filtro:</span> {prefilter.reason} Nenhuma chamada de IA é feita para esta vaga.
+            </p>
+          ) : (
+            <div className="mt-3">
+              <p className="mb-3 text-sm text-zinc-600 dark:text-zinc-400">
+                Ainda não avaliada. A IA compara a vaga com o seu perfil e o seu currículo principal (sem e-mail, telefone, endereço ou links).
+              </p>
+              <EvaluateButton postingId={job.id} reevaluate={false} />
+            </div>
+          )}
+        </section>
       )}
 
       <h2 className="mt-8 text-sm font-medium text-zinc-500 uppercase">Descrição</h2>

@@ -17,9 +17,11 @@
     "db:studio": "prisma studio",
     "db:reset": "prisma migrate reset",
     "scan": "tsx scripts/scan.ts",
+    "match": "tsx scripts/match.ts",
     "test": "vitest run"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^1.4.0",
     "@auth/prisma-adapter": "^2.11.3",
     "@prisma/adapter-pg": "^7.10.1",
     "@prisma/client": "^7.10.1",
