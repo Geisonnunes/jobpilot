@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/session";
 import { MatchBadge } from "@/components/match-badge";
 import { PROMPT_VERSION } from "@/server/ai/match/prompts/match-v1";
+import { currentRecommendation } from "@/server/ai/match/view";
 
 /**
  * Página síncrona: a leitura da sessão e do banco acontece em DashboardContent,
@@ -97,7 +98,7 @@ async function DashboardContent() {
                 <p className="text-sm break-words text-zinc-600 dark:text-zinc-400">{m.posting.company}</p>
               </div>
               <div className="shrink-0">
-                <MatchBadge score={Number(m.score)} recommendation={m.recommendation} />
+                <MatchBadge score={Number(m.score)} recommendation={currentRecommendation(m.score.toString(), profile?.minMatchScore.toString(), m.recommendation)} />
               </div>
             </li>
           ))}

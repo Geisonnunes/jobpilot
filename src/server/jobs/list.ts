@@ -20,7 +20,7 @@ export interface JobFilters {
   compat: boolean;
   /** "recent" (padrão) ou "score": ordena pela nota da avaliação de IA. */
   sort: "recent" | "score";
-  /** "Somente recomendadas": avaliações APPLY. */
+  /** "Somente recomendadas": nota >= nota mínima ATUAL do perfil (a recomendação gravada é só histórico). */
   recommended: boolean;
   page: number;
 }
@@ -61,7 +61,7 @@ export function buildJobsWhere(
   userId: string,
   profile: ProfileForFilter | null,
   /** CV principal + versão do prompt: define quais avaliações contam em "Somente recomendadas". */
-  matchScope?: { resumeId: string; promptVersion: string },
+  matchScope?: { resumeId: string; promptVersion: string; minMatchScore: number },
 ): Prisma.JobPostingWhereInput {
   const and: Prisma.JobPostingWhereInput[] = [{ OR: [{ addedByUserId: null }, { addedByUserId: userId }] }];
 
@@ -76,7 +76,11 @@ export function buildJobsWhere(
     // Sem CV principal não há avaliação válida: a lista fica vazia (e não mostra tudo por engano).
     and.push(
       matchScope
-        ? { matches: { some: { userId, resumeId: matchScope.resumeId, promptVersion: matchScope.promptVersion, recommendation: "APPLY" } } }
+        ? {
+            matches: {
+              some: { userId, resumeId: matchScope.resumeId, promptVersion: matchScope.promptVersion, score: { gte: matchScope.minMatchScore.toFixed(1) } },
+            },
+          }
         : { id: "" },
     );
   }

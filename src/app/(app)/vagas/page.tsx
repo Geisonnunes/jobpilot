@@ -8,6 +8,7 @@ import { buildJobsWhere, daysAgoLabel, filtersToQuery, isHttpUrl, PAGE_SIZE, par
 import { MatchBadge } from "@/components/match-badge";
 import { prefilterPosting } from "@/server/ai/prefilter";
 import { PROMPT_VERSION } from "@/server/ai/match/prompts/match-v1";
+import { currentRecommendation } from "@/server/ai/match/view";
 import { ScanButton } from "./scan-button";
 
 /**
@@ -44,11 +45,12 @@ async function VagasContent({ searchParams }: { searchParams: PageProps<"/vagas"
   const [profile, resume] = await Promise.all([
     prisma.candidateProfile.findUnique({
       where: { userId: user.id },
-      select: { excludeKeywords: true, seniority: true, workModes: true },
+      select: { excludeKeywords: true, seniority: true, workModes: true, minMatchScore: true },
     }),
     prisma.resume.findFirst({ where: { userId: user.id, isPrimary: true }, select: { id: true } }),
   ]);
-  const scope = resume ? { resumeId: resume.id, promptVersion: PROMPT_VERSION } : undefined;
+  const minMatchScore = profile ? Number(profile.minMatchScore) : null;
+  const scope = resume ? { resumeId: resume.id, promptVersion: PROMPT_VERSION, minMatchScore: minMatchScore ?? 4.0 } : undefined;
   const where = buildJobsWhere(filters, user.id, profile, scope);
 
   // Avaliações válidas (CV principal + versão atual do prompt) deste usuário, por vaga.
@@ -58,7 +60,10 @@ async function VagasContent({ searchParams }: { searchParams: PageProps<"/vagas"
         select: { postingId: true, score: true, recommendation: true },
       })
     : [];
-  const matches = new Map(matchRows.map((m) => [m.postingId, { score: Number(m.score), recommendation: m.recommendation }]));
+  // Recomendação sempre da nota + nota mínima ATUAL do perfil; a gravada é só histórico.
+  const matches = new Map(
+    matchRows.map((m) => [m.postingId, { score: Number(m.score), recommendation: currentRecommendation(m.score.toString(), minMatchScore, m.recommendation) }]),
+  );
 
   const jobSelect = {
     id: true, title: true, company: true, location: true, workMode: true, seniority: true,

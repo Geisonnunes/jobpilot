@@ -1,5 +1,5 @@
 import { MatchBadge } from "@/components/match-badge";
-import { parseStoredDimensions } from "@/server/ai/match/view";
+import { parseStoredDimensions, RECOMMENDATION_LABEL } from "@/server/ai/match/view";
 import { EvaluateButton } from "./evaluate-button";
 
 const dateTime = new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short", timeZone: "America/Sao_Paulo" });
@@ -18,14 +18,20 @@ export interface MatchPanelData {
 }
 
 /** Bloco da avaliação de IA. Todo o conteúdo é texto puro (vem da IA a partir de dados externos). */
-export function MatchPanel({ postingId, match }: { postingId: string; match: MatchPanelData }) {
+export function MatchPanel({ postingId, match, recommendation }: { postingId: string; match: MatchPanelData; recommendation: MatchPanelData["recommendation"] }) {
   const stored = parseStoredDimensions(match.dimensions);
   return (
     <section aria-labelledby="match-title" className="mt-8 rounded-xl border border-zinc-200 p-4 dark:border-zinc-800">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 id="match-title" className="text-sm font-medium text-zinc-500 uppercase">Avaliação de compatibilidade</h2>
-        <MatchBadge score={match.score.toString()} recommendation={match.recommendation} />
+        <MatchBadge score={match.score.toString()} recommendation={recommendation} />
       </div>
+
+      {recommendation !== match.recommendation && (
+        <p className="mt-2 text-xs text-zinc-500">
+          Recomendação atualizada pela sua nota mínima atual. Na avaliação, era “{RECOMMENDATION_LABEL[match.recommendation]}”.
+        </p>
+      )}
 
       {match.summary && <p className="mt-3 text-sm leading-relaxed break-words">{match.summary}</p>}
 

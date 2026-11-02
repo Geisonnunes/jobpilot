@@ -8,6 +8,7 @@ import { daysAgoLabel, isHttpUrl } from "@/server/jobs/list";
 import { prefilterPosting } from "@/server/ai/prefilter";
 import { PROMPT_VERSION } from "@/server/ai/match/prompts/match-v1";
 import { EvaluateButton } from "./evaluate-button";
+import { currentRecommendation } from "@/server/ai/match/view";
 import { MatchPanel } from "./match-panel";
 
 /** Detalhes de uma vaga. A descrição é texto puro: nunca é renderizada como HTML. */
@@ -34,7 +35,7 @@ async function JobDetail({ params }: { params: PageProps<"/vagas/[id]">["params"
   if (!job) notFound();
 
   const [profile, resume] = await Promise.all([
-    prisma.candidateProfile.findUnique({ where: { userId: user.id }, select: { excludeKeywords: true, seniority: true, workModes: true } }),
+    prisma.candidateProfile.findUnique({ where: { userId: user.id }, select: { excludeKeywords: true, seniority: true, workModes: true, minMatchScore: true } }),
     prisma.resume.findFirst({ where: { userId: user.id, isPrimary: true }, select: { id: true } }),
   ]);
   const match = resume
@@ -84,7 +85,7 @@ async function JobDetail({ params }: { params: PageProps<"/vagas/[id]">["params"
       )}
 
       {match ? (
-        <MatchPanel postingId={job.id} match={match} />
+        <MatchPanel postingId={job.id} match={match} recommendation={currentRecommendation(match.score.toString(), profile?.minMatchScore.toString(), match.recommendation)} />
       ) : (
         <section aria-labelledby="match-title" className="mt-8 rounded-xl border border-zinc-200 p-4 dark:border-zinc-800">
           <h2 id="match-title" className="text-sm font-medium text-zinc-500 uppercase">Avaliação de compatibilidade</h2>

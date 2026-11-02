@@ -1,3 +1,5 @@
+import { recommendationFor, type Recommendation } from "./result";
+
 /** Leitura segura do JSON salvo em JobMatch.dimensions (funções puras). */
 
 export const DIMENSION_LABELS = {
@@ -38,3 +40,18 @@ export function parseStoredDimensions(json: unknown): StoredDimensions {
 }
 
 export const RECOMMENDATION_LABEL = { APPLY: "Candidatar-se", MAYBE: "Talvez", SKIP: "Pular" } as const;
+
+/** Nota mínima padrão do perfil (o mesmo default do schema), usada só se não houver perfil. */
+export const DEFAULT_MIN_MATCH_SCORE = 4.0;
+
+/**
+ * Recomendação exibida: sempre calculada da nota com a nota mínima ATUAL do perfil.
+ * A recomendação gravada em JobMatch é só histórico. Sem perfil, cai para a gravada.
+ */
+export function currentRecommendation(score: number | string, minMatchScore: number | string | null | undefined, stored: Recommendation): Recommendation {
+  if (minMatchScore === null || minMatchScore === undefined) return stored;
+  const min = Number(minMatchScore);
+  const s = Number(score);
+  if (!Number.isFinite(min) || !Number.isFinite(s)) return stored;
+  return recommendationFor(s, min);
+}
