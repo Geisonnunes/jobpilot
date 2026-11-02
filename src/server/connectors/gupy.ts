@@ -25,7 +25,7 @@ const API_HOST = "portal.gupy.io";
 const PER_PAGE = 100; // máximo do servidor
 const MAX_PAGES_PER_KEYWORD = 3;
 /** No máximo estas palavras-chave por coleta: cada uma é uma busca independente. */
-const MAX_KEYWORDS = 3;
+const MAX_KEYWORDS = 6;
 /** Teto de requisições por coleta, mesmo com várias palavras-chave. */
 const MAX_REQUESTS = 6;
 const EARLY_STOP_MARGIN_MS = 2 * 86_400_000;
@@ -163,9 +163,13 @@ async function search(query: ConnectorQuery, ctx: ConnectorContext): Promise<Nor
   let firstError: unknown = null;
   let succeeded = false;
 
-  for (const keyword of keywords) {
-    for (let page = 0; page < MAX_PAGES_PER_KEYWORD; page++) {
-      if (out.length >= max || requests >= MAX_REQUESTS || ctx.signal?.aborted) break;
+  // Página 0 de TODAS as palavras-chave primeiro; só depois a página 1 das que vieram cheias, e assim por diante.
+  // Com o teto de MAX_REQUESTS, nenhum termo fica sem busca por causa de outro que tem muitas páginas.
+  const finished = new Set<string>();
+  outer: for (let page = 0; page < MAX_PAGES_PER_KEYWORD; page++) {
+    for (const keyword of keywords) {
+      if (finished.has(keyword)) continue;
+      if (out.length >= max || requests >= MAX_REQUESTS || ctx.signal?.aborted) break outer;
       if (requests > 0) await ctx.sleep(ctx.requestDelayMs);
       requests++;
 
@@ -175,8 +179,9 @@ async function search(query: ConnectorQuery, ctx: ConnectorContext): Promise<Nor
       } catch (err) {
         // Uma busca que falha para; as demais continuam (e a coleta vira PARCIAL).
         firstError ??= err;
+        finished.add(keyword);
         ctx.log(`Gupy: busca "${keyword}" interrompida na página ${page}: ${(err as Error).message}`, { level: "warn" });
-        break;
+        continue;
       }
       succeeded = true;
 
@@ -184,6 +189,7 @@ async function search(query: ConnectorQuery, ctx: ConnectorContext): Promise<Nor
       for (const raw of rows) {
         const job = normalizeGupyJob(raw);
         if (!job) continue;
+        job.sourceKeyword = keyword;
         pageJobs.push(job);
         if (seen.has(job.url)) continue;
         seen.add(job.url);
@@ -191,8 +197,8 @@ async function search(query: ConnectorQuery, ctx: ConnectorContext): Promise<Nor
         if (out.length < max) out.push(job);
       }
 
-      if (rows.length < PER_PAGE) break; // página curta = fim do feed
-      if (pageIsPastWindow(pageJobs, cutoffMs)) break;
+      if (rows.length < PER_PAGE) finished.add(keyword); // página curta = fim do feed
+      else if (pageIsPastWindow(pageJobs, cutoffMs)) finished.add(keyword);
     }
   }
 

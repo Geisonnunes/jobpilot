@@ -35,7 +35,7 @@ async function JobDetail({ params }: { params: PageProps<"/vagas/[id]">["params"
   if (!job) notFound();
 
   const [profile, resume] = await Promise.all([
-    prisma.candidateProfile.findUnique({ where: { userId: user.id }, select: { excludeKeywords: true, seniority: true, workModes: true, minMatchScore: true } }),
+    prisma.candidateProfile.findUnique({ where: { userId: user.id }, select: { excludeKeywords: true, seniority: true, workModes: true, minMatchScore: true, state: true } }),
     prisma.resume.findFirst({ where: { userId: user.id, isPrimary: true }, select: { id: true } }),
   ]);
   const match = resume

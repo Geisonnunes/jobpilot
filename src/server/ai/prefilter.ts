@@ -1,4 +1,5 @@
 import type { PostingStatus, Seniority, WorkMode } from "@/generated/prisma/enums";
+import { toUf } from "@/lib/states";
 import { SENIORITY_ORDER } from "@/server/jobs/infer";
 import { normalizeForComparison } from "@/server/jobs/text";
 
@@ -16,16 +17,20 @@ export interface PrefilterPosting {
   description: string;
   seniority: Seniority | null;
   workMode: WorkMode | null;
+  /** Estado da vaga: sigla ("SP") ou por extenso ("São Paulo", como a Gupy envia). */
+  state?: string | null;
 }
 
 export interface PrefilterProfile {
   excludeKeywords: string[];
   seniority: Seniority;
   workModes: WorkMode[];
+  /** UF do perfil ("SP"). Sem UF, a região não é verificada. */
+  state?: string | null;
 }
 
 export type PrefilterResult = { pass: true } | { pass: false; code: PrefilterCode; reason: string };
-export type PrefilterCode = "CLOSED" | "EXCLUDED_KEYWORD" | "SENIORITY_ABOVE" | "WORK_MODE" | "NO_DESCRIPTION";
+export type PrefilterCode = "CLOSED" | "EXCLUDED_KEYWORD" | "SENIORITY_ABOVE" | "WORK_MODE" | "NO_DESCRIPTION" | "REGION";
 
 const MODE_LABEL: Record<WorkMode, string> = { REMOTE: "remoto", HYBRID: "híbrido", ONSITE: "presencial" };
 const LEVEL_LABEL: Record<Seniority, string> = { INTERN: "estágio", JUNIOR: "júnior", MID: "pleno", SENIOR: "sênior", LEAD: "lead" };
@@ -53,6 +58,15 @@ export function prefilterPosting(posting: PrefilterPosting, profile: PrefilterPr
 
   if (posting.workMode && profile.workModes.length > 0 && !profile.workModes.includes(posting.workMode)) {
     return { pass: false, code: "WORK_MODE", reason: `Modalidade ${MODE_LABEL[posting.workMode]} não está entre as que você aceita.` };
+  }
+
+  // Presencial/híbrida em outra UF: fora da região. Remota não é afetada; sem UF (na vaga ou no perfil), não descarta.
+  if (posting.workMode === "HYBRID" || posting.workMode === "ONSITE") {
+    const jobUf = toUf(posting.state);
+    const myUf = toUf(profile.state);
+    if (jobUf && myUf && jobUf !== myUf) {
+      return { pass: false, code: "REGION", reason: `Fora da sua região (vaga em ${jobUf}; você está em ${myUf}).` };
+    }
   }
 
   if (posting.description.trim().length < MIN_DESCRIPTION_CHARS) {

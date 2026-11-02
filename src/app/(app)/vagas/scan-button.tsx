@@ -46,6 +46,11 @@ export function ScanButton() {
                   <span>
                     {s.newCount} nova(s), {s.updatedCount} atualizada(s), {s.duplicateCount} duplicada(s), {s.errorCount} erro(s)
                     {" "}de {s.fetched} lida(s)
+                    {s.discardedIrrelevant + s.discardedSeniority > 0 && (
+                      <span className="text-zinc-500">
+                        {" "}· {s.discardedIrrelevant + s.discardedSeniority} descartada(s) ({s.discardedIrrelevant} fora da área, {s.discardedSeniority} de nível acima)
+                      </span>
+                    )}
                     {s.status === "FAILED" && <span className="text-red-600 dark:text-red-400"> · a coleta falhou</span>}
                     {s.status === "PARTIAL" && <span className="text-amber-700 dark:text-amber-400"> · coleta parcial</span>}
                   </span>

@@ -1,4 +1,5 @@
 import type { Seniority, WorkMode } from "@/generated/prisma/enums";
+import { detectTitleLevel } from "./relevance";
 import { normalizeForComparison } from "./text";
 
 /**
@@ -30,6 +31,9 @@ export function inferSeniority(title: string, description = ""): Seniority | und
   const t = normalizeForComparison(title);
   // Em "Júnior/Pleno" vale o menor nível: é o que importa a quem busca vaga júnior.
   for (const [level, re] of TITLE_RULES) if (re.test(t)) return level;
+  // "Pl", "Sr" colados a cargo, "II"/"III", "Architect"…: o detector do filtro de relevância cobre o que as regras acima não pegam.
+  const detected = detectTitleLevel(title);
+  if (detected) return detected;
   const d = normalizeForComparison(description);
   for (const [level, re] of DESCRIPTION_RULES) if (re.test(d)) return level;
   return undefined;

@@ -7,7 +7,8 @@ import { createConnectorContext } from "@/server/connectors/http";
 import { getConnector } from "@/server/connectors/registry";
 import type { ConnectorQuery, NormalizedJob } from "@/server/connectors/types";
 import { saveJobs, type ScanError } from "./ingest";
-import { MAX_JOBS_PER_RUN } from "./query";
+import { buildGupyQuery, buildQueryFromProfile, MAX_JOBS_PER_RUN, type ProfileForQuery } from "./query";
+import { filterByRelevance, type RelevanceProfile, type RelevanceStats } from "./relevance";
 
 /** Uma coleta RUNNING há mais tempo que isso é considerada travada e não bloqueia a próxima. */
 const STALE_RUNNING_MS = 10 * 60_000;
@@ -25,10 +26,15 @@ export interface ScanSummary {
   duplicateCount: number;
   errorCount: number;
   errors: ScanError[];
+  /** Vagas lidas mas não salvas pelo filtro de relevância (só Gupy). */
+  discardedIrrelevant: number;
+  discardedSeniority: number;
 }
 
 export interface RunScanOptions {
   query: ConnectorQuery;
+  /** Liga o filtro de relevância na ingestão (só vale para a Gupy; o Remotive não é filtrado). */
+  relevance?: RelevanceProfile;
   /** Ignora minIntervalMinutes. */
   force?: boolean;
   now?: Date;
@@ -43,6 +49,8 @@ const empty = (source: string, sourceName: string): ScanSummary => ({
   duplicateCount: 0,
   errorCount: 0,
   errors: [],
+  discardedIrrelevant: 0,
+  discardedSeniority: 0,
 });
 
 function formatMinutes(min: number): string {
@@ -134,9 +142,18 @@ export async function runScan(sourceSlug: string, options: RunScanOptions): Prom
     fatal = { message: (err instanceof Error ? err.message : "Erro desconhecido").slice(0, 300), at: new Date().toISOString() };
   }
 
+  // Gupy: vagas fora da área ou acima do nível nem são salvas; os contadores vão para ScanRun.query.stats.
+  let stats: RelevanceStats | undefined;
+  if (!fatal && options.relevance && source.slug === "gupy") {
+    const filtered = filterByRelevance(jobs, options.relevance);
+    jobs = filtered.kept;
+    stats = filtered.stats;
+  }
+
   const saved = fatal
     ? { fetched: 0, newCount: 0, updatedCount: 0, duplicateCount: 0, errorCount: 0, errors: [] as ScanError[] }
     : await saveJobs(source.id, jobs, now);
+  const fetchedTotal = stats?.fetched ?? saved.fetched;
 
   const errors = [...(fatal ? [fatal] : []), ...warnings, ...saved.errors].slice(0, 20);
   const errorCount = saved.errorCount + warnings.length + (fatal ? 1 : 0);
@@ -147,7 +164,8 @@ export async function runScan(sourceSlug: string, options: RunScanOptions): Prom
     data: {
       status,
       finishedAt: new Date(),
-      fetchedCount: saved.fetched,
+      fetchedCount: fetchedTotal,
+      ...(stats ? { query: { ...query, stats } as unknown as Prisma.InputJsonValue } : {}),
       newCount: saved.newCount,
       updatedCount: saved.updatedCount,
       duplicateCount: saved.duplicateCount,
@@ -160,11 +178,26 @@ export async function runScan(sourceSlug: string, options: RunScanOptions): Prom
     ...summary,
     status,
     scanRunId: run.id,
-    fetched: saved.fetched,
+    fetched: fetchedTotal,
+    discardedIrrelevant: stats?.discardedIrrelevant ?? 0,
+    discardedSeniority: stats?.discardedSeniority ?? 0,
     newCount: saved.newCount,
     updatedCount: saved.updatedCount,
     duplicateCount: saved.duplicateCount,
     errorCount,
     errors,
   };
+}
+
+/**
+ * Coleta de uma fonte para um perfil: cada fonte recebe a busca que lhe cabe
+ * (a Gupy, termos específicos + filtro de relevância; o Remotive, a busca de sempre).
+ */
+export function runScanForProfile(sourceSlug: string, profile: ProfileForQuery, options: { force?: boolean } = {}): Promise<ScanSummary> {
+  const isGupy = sourceSlug === "gupy";
+  return runScan(sourceSlug, {
+    query: isGupy ? buildGupyQuery(profile) : buildQueryFromProfile(profile),
+    relevance: isGupy ? { seniority: profile.seniority ?? "JUNIOR" } : undefined,
+    force: options.force,
+  });
 }

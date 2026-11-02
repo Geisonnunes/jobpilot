@@ -8,8 +8,8 @@
  */
 import "dotenv/config";
 import { prisma } from "@/lib/prisma";
-import { buildQueryFromProfile, DEFAULT_PROFILE_FOR_QUERY } from "@/server/jobs/query";
-import { runScan, type ScanSummary } from "@/server/jobs/scan";
+import { buildGupyKeywords, buildQueryFromProfile, DEFAULT_PROFILE_FOR_QUERY } from "@/server/jobs/query";
+import { runScanForProfile, type ScanSummary } from "@/server/jobs/scan";
 
 function arg(name: string): string | undefined {
   const prefix = `--${name}=`;
@@ -22,7 +22,7 @@ function print(s: ScanSummary) {
     return;
   }
   console.log(
-    `- ${s.sourceName}: ${s.status} | lidas ${s.fetched} | novas ${s.newCount} | atualizadas ${s.updatedCount} | duplicadas ${s.duplicateCount} | erros ${s.errorCount}`,
+    `- ${s.sourceName}: ${s.status} | lidas ${s.fetched} | descartadas ${s.discardedIrrelevant} fora da área + ${s.discardedSeniority} nível acima | novas ${s.newCount} | atualizadas ${s.updatedCount} | duplicadas ${s.duplicateCount} | erros ${s.errorCount}`,
   );
   for (const e of s.errors) console.log(`    · ${e.message}`);
 }
@@ -40,10 +40,11 @@ async function main() {
   }
 
   const profile = await prisma.candidateProfile.findFirst({ orderBy: { updatedAt: "desc" } });
-  const query = buildQueryFromProfile(profile ?? DEFAULT_PROFILE_FOR_QUERY);
-  console.log(`Palavras-chave: ${query.keywords.join(", ")}${profile ? "" : " (sugestões padrão: sem perfil)"}`);
+  const scanProfile = profile ?? DEFAULT_PROFILE_FOR_QUERY;
+  console.log(`Palavras-chave (Remotive): ${buildQueryFromProfile(scanProfile).keywords.join(", ")}${profile ? "" : " (sugestões padrão: sem perfil)"}`);
+  console.log(`Palavras-chave (Gupy): ${buildGupyKeywords(scanProfile).join(", ")}`);
 
-  for (const source of selected) print(await runScan(source.slug, { query, force }));
+  for (const source of selected) print(await runScanForProfile(source.slug, scanProfile, { force }));
 }
 
 main()

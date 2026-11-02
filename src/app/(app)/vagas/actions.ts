@@ -7,8 +7,8 @@ import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/session";
 import { UFS } from "@/lib/profile";
 import { toPostingData, prepareJob } from "@/server/jobs/ingest";
-import { buildQueryFromProfile, DEFAULT_PROFILE_FOR_QUERY } from "@/server/jobs/query";
-import { runScan, type ScanSummary } from "@/server/jobs/scan";
+import { DEFAULT_PROFILE_FOR_QUERY } from "@/server/jobs/query";
+import { runScanForProfile, type ScanSummary } from "@/server/jobs/scan";
 import { AiProviderError } from "@/server/ai/provider";
 import { evaluatePostingForUser } from "@/server/ai/match/service";
 
@@ -24,19 +24,19 @@ export async function scanNow(): Promise<ScanNowResult> {
     prisma.candidateProfile.findUnique({ where: { userId: user.id } }),
     prisma.jobSource.findMany({ where: { enabled: true, kind: { not: "MANUAL" } }, orderBy: { slug: "asc" } }),
   ]);
-  const query = buildQueryFromProfile(profile ?? DEFAULT_PROFILE_FOR_QUERY);
+  const scanProfile = profile ?? DEFAULT_PROFILE_FOR_QUERY;
 
   const summaries: ScanSummary[] = [];
   for (const source of sources) {
     try {
-      summaries.push(await runScan(source.slug, { query }));
+      summaries.push(await runScanForProfile(source.slug, scanProfile));
     } catch (error) {
       console.error(`Falha inesperada na coleta (${source.slug}):`, error instanceof Error ? error.name : "erro");
       summaries.push({
         source: source.slug,
         sourceName: source.name,
         skipped: "Erro inesperado ao coletar. Tente de novo mais tarde.",
-        fetched: 0, newCount: 0, updatedCount: 0, duplicateCount: 0, errorCount: 0, errors: [],
+        fetched: 0, newCount: 0, updatedCount: 0, duplicateCount: 0, errorCount: 0, errors: [], discardedIrrelevant: 0, discardedSeniority: 0,
       });
     }
   }

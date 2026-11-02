@@ -135,11 +135,29 @@ describe("gupyConnector.search (sem rede)", () => {
     expect(ctx.sleep).toHaveBeenCalledWith(1000); // requestDelayMs entre requisições
   });
 
-  it("limita a 3 palavras-chave e respeita maxResults", async () => {
+  it("limita a 6 palavras-chave (e a 6 requisições) e respeita maxResults", async () => {
     const { ctx, urls } = ctxWith(() => fixture);
-    const jobs = await gupyConnector.search({ keywords: ["a", "b", "c", "d", "e"], maxResults: 4 }, ctx);
-    expect(urls.length).toBeLessThanOrEqual(3);
+    await gupyConnector.search({ keywords: ["a", "b", "c", "d", "e", "f", "g", "h"], maxResults: 500 }, ctx);
+    expect(urls).toHaveLength(6);
+    expect(urls.map((u) => new URL(u).searchParams.get("jobName"))).toEqual(["a", "b", "c", "d", "e", "f"]);
+
+    const capped = ctxWith(() => fixture);
+    const jobs = await gupyConnector.search({ keywords: ["a", "b", "c"], maxResults: 4 }, capped.ctx);
     expect(jobs).toHaveLength(4);
+  });
+
+  it("pagina em rodadas: a página 0 de todos os termos vem antes da página 1 de qualquer um", async () => {
+    const full = { data: Array.from({ length: 100 }, (_, i) => ({ id: i, name: `Dev ${i}`, careerPageName: "Acme", jobUrl: `https://acme.gupy.io/job/${i}`, description: "" })) };
+    const { ctx, urls } = ctxWith((url) => (new URL(url).searchParams.get("offset") === "0" ? full : { data: [] }));
+    await gupyConnector.search({ keywords: ["a", "b", "c"], maxResults: 500 }, ctx);
+    const seq = urls.map((u) => `${new URL(u).searchParams.get("jobName")}@${new URL(u).searchParams.get("offset")}`);
+    expect(seq).toEqual(["a@0", "b@0", "c@0", "a@100", "b@100", "c@100"]);
+  });
+
+  it("marca cada vaga com a palavra-chave que a trouxe", async () => {
+    const { ctx } = ctxWith(() => fixture);
+    const jobs = await gupyConnector.search({ keywords: ["React", "Front-end"] }, ctx);
+    expect(jobs.every((j) => j.sourceKeyword === "React")).toBe(true); // a 2ª busca só repete as mesmas URLs
   });
 
   it("filtra por since e ignora país que não é o Brasil", async () => {

@@ -34,6 +34,8 @@ export interface NormalizedJob {
   employmentType?: string;
   tags?: string[];
   publishedAt?: Date;
+  /** Palavra-chave da busca que trouxe a vaga (só para estatísticas da coleta; não é salva). */
+  sourceKeyword?: string;
 }
 
 export interface ConnectorContext {

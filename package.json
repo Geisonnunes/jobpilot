@@ -18,6 +18,7 @@
     "db:reset": "prisma migrate reset",
     "scan": "tsx scripts/scan.ts",
     "match": "tsx scripts/match.ts",
+    "jobs:cleanup": "tsx scripts/cleanup-jobs.ts",
     "test": "vitest run"
   },
   "dependencies": {

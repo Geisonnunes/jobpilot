@@ -59,7 +59,7 @@ async function main() {
       where: { status: { not: "CLOSED" }, OR: [{ addedByUserId: null }, { addedByUserId: userId }] },
       orderBy: [{ firstSeenAt: "desc" }],
       take: 500,
-      select: { id: true, status: true, title: true, description: true, seniority: true, workMode: true },
+      select: { id: true, status: true, title: true, description: true, seniority: true, workMode: true, state: true },
     });
     ids = recent
       .filter((p) => !done.has(p.id) && prefilterPosting(p, profile).pass)

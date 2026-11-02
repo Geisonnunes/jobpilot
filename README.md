@@ -87,6 +87,13 @@ npm test                                               # testes (vitest), sem ac
 - Fontes: Gupy e Remotive (APIs públicas) e vagas coladas à mão em `/vagas/nova`. Nada de scraping.
 - A busca vem do seu perfil (cargos + principais tecnologias). Cada fonte respeita `minIntervalMinutes` e
   `requestDelayMs` (o Remotive pede no máximo ~4 consultas por dia). `--force` ignora o intervalo mínimo.
+- **Gupy: busca específica e filtro de relevância.** Os termos vêm do perfil (até 6, sem habilidades genéricas sozinhas).
+  Vagas de outra área, de mobile nativo, back-end puro ou de nível acima do seu perfil (pleno, sênior, "Sr", "Pl"…) **não são salvas**;
+  os contadores ficam em `ScanRun.query.stats`. Os termos de cada categoria estão em `src/server/jobs/relevance.ts`.
+  O Remotive não é filtrado.
+- Vagas híbridas/presenciais fora da sua UF são barradas no pré-filtro de IA ("Fora da sua região"); remotas não.
+- `npm run jobs:cleanup` aplica o mesmo filtro às vagas da Gupy já salvas. Por padrão é `--dry-run` (só lista);
+  `-- --apply` apaga. Nunca remove vagas manuais nem vagas com avaliação de IA ou candidatura.
 - Código portado do Career Ops (MIT): veja `THIRD_PARTY_NOTICES.md`.
 - Só para desenvolvimento: com `JOBPILOT_RECORD_DIR=<pasta>` (por exemplo em `.env.local`) as respostas cruas das
   fontes são gravadas nessa pasta, para criar fixtures de teste.

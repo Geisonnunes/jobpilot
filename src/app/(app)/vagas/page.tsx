@@ -45,7 +45,7 @@ async function VagasContent({ searchParams }: { searchParams: PageProps<"/vagas"
   const [profile, resume] = await Promise.all([
     prisma.candidateProfile.findUnique({
       where: { userId: user.id },
-      select: { excludeKeywords: true, seniority: true, workModes: true, minMatchScore: true },
+      select: { excludeKeywords: true, seniority: true, workModes: true, minMatchScore: true, state: true },
     }),
     prisma.resume.findFirst({ where: { userId: user.id, isPrimary: true }, select: { id: true } }),
   ]);
@@ -67,7 +67,7 @@ async function VagasContent({ searchParams }: { searchParams: PageProps<"/vagas"
 
   const jobSelect = {
     id: true, title: true, company: true, location: true, workMode: true, seniority: true,
-    originalUrl: true, publishedAt: true, lastSeenAt: true, addedByUserId: true, status: true, description: true,
+    originalUrl: true, publishedAt: true, lastSeenAt: true, addedByUserId: true, status: true, description: true, state: true,
     source: { select: { name: true } },
   } as const;
   const defaultOrder = [{ publishedAt: { sort: "desc" as const, nulls: "last" as const } }, { firstSeenAt: "desc" as const }];

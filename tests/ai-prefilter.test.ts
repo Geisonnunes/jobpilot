@@ -37,3 +37,38 @@ describe("prefilterPosting", () => {
     expect(r.pass === false && r.reason.length).toBeGreaterThan(5);
   });
 });
+
+describe("prefilterPosting: região", () => {
+  const sp: PrefilterProfile = { excludeKeywords: [], seniority: "JUNIOR", workModes: ["REMOTE", "HYBRID", "ONSITE"], state: "SP" };
+  const job = (over: Partial<PrefilterPosting> = {}): PrefilterPosting => ({
+    status: "OPEN", title: "Dev", description: "x".repeat(250), seniority: "JUNIOR", workMode: "HYBRID", state: "Paraná", ...over,
+  });
+
+  it("híbrida ou presencial em outra UF: 'Fora da sua região'", () => {
+    for (const workMode of ["HYBRID", "ONSITE"] as const) {
+      const r = prefilterPosting(job({ workMode }), sp);
+      expect(r).toMatchObject({ pass: false, code: "REGION" });
+      expect(r.pass === false && r.reason).toMatch(/Fora da sua região/);
+    }
+  });
+  it("aceita estado por extenso (como a Gupy envia) ou sigla, com ou sem acento", () => {
+    expect(prefilterPosting(job({ state: "Rio Grande do Sul" }), sp).pass).toBe(false);
+    expect(prefilterPosting(job({ state: "RS" }), sp).pass).toBe(false);
+    expect(prefilterPosting(job({ state: "São Paulo" }), sp).pass).toBe(true);
+    expect(prefilterPosting(job({ state: "sao paulo" }), sp).pass).toBe(true);
+    expect(prefilterPosting(job({ state: "SP" }), sp).pass).toBe(true);
+  });
+  it("remota não é afetada, mesmo em outra UF", () => {
+    expect(prefilterPosting(job({ workMode: "REMOTE", state: "Paraná" }), sp).pass).toBe(true);
+  });
+  it("vaga sem UF (ou UF desconhecida) não é descartada", () => {
+    expect(prefilterPosting(job({ state: null }), sp).pass).toBe(true);
+    expect(prefilterPosting(job({ state: "" }), sp).pass).toBe(true);
+    expect(prefilterPosting(job({ state: undefined }), sp).pass).toBe(true);
+    expect(prefilterPosting(job({ state: "Atlântida" }), sp).pass).toBe(true);
+  });
+  it("perfil sem UF não restringe; modalidade desconhecida também não", () => {
+    expect(prefilterPosting(job(), { ...sp, state: null }).pass).toBe(true);
+    expect(prefilterPosting(job({ workMode: null }), sp).pass).toBe(true);
+  });
+});

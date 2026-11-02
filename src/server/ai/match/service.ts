@@ -79,6 +79,7 @@ export async function loadEvaluateInput(userId: string, postingId: string): Prom
         company: posting.company,
         location: posting.location,
         workMode: posting.workMode,
+        state: posting.state,
         seniority: posting.seniority,
         employmentType: posting.employmentType,
         salaryMin: posting.salaryMin,
