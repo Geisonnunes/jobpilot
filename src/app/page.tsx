@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 const phases = [
   { n: 1, title: "Fundação", desc: "Schema, autenticação, perfil e CV", status: "Em andamento" },
   { n: 2, title: "Coleta de vagas", desc: "Gupy, Remotive e ATS públicos + deduplicação", status: "Próxima" },
@@ -18,6 +20,13 @@ export default function Home() {
         Encontra vagas de front-end, avalia a compatibilidade com o seu CV e prepara a
         candidatura. Quem aperta o botão de enviar é você.
       </p>
+
+      <Link
+        href="/login"
+        className="mt-6 inline-flex rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-emerald-700"
+      >
+        Entrar
+      </Link>
 
       <ol className="mt-10 space-y-3">
         {phases.map((p) => (

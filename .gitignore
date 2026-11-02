@@ -46,3 +46,9 @@ next-env.d.ts
 
 # Dados pessoais (CVs, exports)
 /storage/
+
+# Artefatos de teste do Playwright (MCP)
+/.playwright-mcp/
+/home.png
+/login.png
+/dashboard.png

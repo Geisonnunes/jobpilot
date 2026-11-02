@@ -27,6 +27,19 @@ npm run dev            # http://localhost:3000
 
 Para ver os dados: `npm run db:studio`.
 
+### Login com GitHub
+
+1. Crie um OAuth App em https://github.com/settings/developers → **New OAuth App**:
+   - Homepage URL: `http://localhost:3000`
+   - Authorization callback URL: `http://localhost:3000/api/auth/callback/github`
+2. Copie o **Client ID** e gere um **Client secret**.
+3. No `.env`, preencha `AUTH_GITHUB_ID` e `AUTH_GITHUB_SECRET`.
+4. Gere o `AUTH_SECRET` com o comando abaixo e cole o resultado em `AUTH_SECRET` no `.env`:
+   ```bash
+   node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+   ```
+   (Não use `npx auth secret`: o pacote `auth` do npm hoje é da Better Auth e gera `BETTER_AUTH_SECRET`, que o Auth.js não lê.)
+
 ## Estrutura
 
 ```

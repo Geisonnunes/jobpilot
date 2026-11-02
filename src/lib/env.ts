@@ -8,9 +8,12 @@ import { z } from "zod";
 const schema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   DATABASE_URL: z.string().url(),
-  // Opcionais na Fase 1; passam a ser exigidos nas fases seguintes.
+  // Opcional até a Fase 3 (matching com IA).
   ANTHROPIC_API_KEY: z.string().optional(),
-  AUTH_SECRET: z.string().optional(),
+  // Auth.js — obrigatórios para o login funcionar
+  AUTH_SECRET: z.string().min(1, "Gere com: node -e \"console.log(require('crypto').randomBytes(32).toString('hex'))\""),
+  AUTH_GITHUB_ID: z.string().min(1, "Client ID do OAuth App do GitHub"),
+  AUTH_GITHUB_SECRET: z.string().min(1, "Client secret do OAuth App do GitHub"),
   AI_MONTHLY_BUDGET_USD: z.coerce.number().positive().default(10),
 });
 
