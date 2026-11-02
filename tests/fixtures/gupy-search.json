@@ -1,0 +1,173 @@
+{
+ "data": [
+  {
+   "id": 12816323,
+   "name": "Software Engineer Backend (.Net/React)",
+   "applicationDeadline": "2027-02-28T00:00:00.000Z",
+   "description": "O que buscamos?Buscamos uma pessoa desenvolvedora Full Stack com perfil colaborativo, orientada à qualidade e à melhoria contínua, que tenha facilidade para atuar em times ágeis, propor soluções técnicas e contribuir com a evolução de produtos digitais. Esperamos alguém com visão de negócio, foco em entrega de valor, senso de responsabilidade e interesse em compartilhar conhecimento com a equipe.\n\n\n\nResponsabilidades e atribuiçõesO que você irá fazer:Desenvolver, evoluir e manter aplicações utilizando .NET Core e React;Implementar e manter APIs REST, garantindo performance, segurança e qualidade das integrações;Desenvolver novas funcionalidades e melhorias alinhadas às necessidades do produto e às histórias de usuário;Participar da análise técnica, refinamento e estimativa de demandas junto ao time;Atuar na modelagem, manutenção e consultas em bancos de dados relacionais;Documentar APIs e serviços utilizando Swagger;Colaborar com Product Owner, Designer e demais integrantes da equipe na definição e construção de soluções;Participar das cerimônias ágeis, contribuindo para o planejamento e evolução contínua do produto;Realizar code reviews e disseminar boas práticas de desenvolvimento;Identificar oportunidades de melhoria técnica, refatoração e redução de débito técnico;Desenvolver e manter testes automatizados para garantir a qualidade das entregas;Trabalhar com integrações em ambientes cloud AWS ou Azure;Apoiar a construção e evolução dos pipelines de CI/CD;Utilizar Git seguindo os padrões e processos de versionamento definidos pelo time.\n\n\n\nRequisitos e qualificaçõesO que você precisa ter:\nExperiência com desenvolvimento utilizando .NET Core;\nConhecimento sólido na criação e manutenção de APIs REST;\nExperiência com Git e práticas de versionamento de código;\nConhecimento em bancos de dados relacionais, preferencialmente SQL Server e/ou PostgreSQL;\nExperiência com testes automatizados (unitários e de integração);\nConhecimento em práticas de CI/CD;\nVivência com metodo",
+   "careerPageName": "SoftDesign",
+   "careerPageLogo": "https://attachments.gupy.io/production/companies/433/career/432/images/2022-08-27_14-41_logo.png",
+   "careerPageUrl": "",
+   "type": "vacancy_type_effective",
+   "publishedDate": "2026-10-30T20:36:27.492Z",
+   "workplaceType": "remote",
+   "city": "",
+   "state": "",
+   "jobUrl": "https://softdesign.gupy.io/job/eyJqb2JJZCI6MTI4MTYzMjMsInNvdXJjZSI6Imd1cHlfcG9ydGFsIn0=?jobBoardSource=gupy_portal",
+   "badges": {
+    "friendlyBadge": true,
+    "isPWD": true
+   },
+   "disabilities": true
+  },
+  {
+   "id": 12776564,
+   "name": "Desenvolvedor React-native  - Sênior",
+   "applicationDeadline": "2026-12-22T00:00:00.000Z",
+   "description": "A FCamara está a procura de um profissional&nbsp;Desenvolvedor React-native- SêniorResponsabilidades e atribuiçõesResponsabilidades e atribuições:- Projetar, desenvolver e manter aplicações mobile de alta performance e escala com React Native e TypeScript- Colaborar com times de Product Design/UX para transformar interfaces e fluxos complexos em jornadas intuitivas, fluidas e acessíveis- Garantir a qualidade do código com testes automatizados (unitários, integração e E2E), revisões de código (PR reviews) e cobertura de testes- Monitorar métricas de desempenho em produção (inicialização, renderização, memória, crashes) e resolver gargalos- Apoiar CI/CD, deploy, versionamento e esteiras para App Store (iOS) e Google Play (Android)- Disseminar padrões de código limpo e arquitetura e apoiar o desenvolvimento técnico de desenvolvedores plenos e juniores da squadRequisitos e qualificaçõesRequisitos e qualificações:- Sólida experiência com React Native em desenvolvimento mobile cross-platform, em projetos de médio/grande porte- TypeScript, com tipagem estrita no ecossistema React- Gerenciamento de estado e cache: Redux Toolkit, Zustand, React Query/TanStack Query ou Context API- Consumo de APIs RESTful e/ou GraphQL, tratamento seguro de erros, autenticação (OAuth, JWT) e offline-first/caching- Fundamentos mobile iOS e Android: linking de bibliotecas nativas, manifestos, permissões, CocoaPods, Gradle e conflitos de dependências nativas- Testes automatizados com Jest, React Native Testing Library e correlatas- Clean Architecture, SOLID, Design Patterns e componentização modular (Design Systems)- Git e fluxos colaborativos (Gitflow, Trunk-based development)- Experiência em fintechs, meios de pagamento, crédito ou benefícios (desejável)- CI/CD para mobile (Fastlane, GitHub Actions, Bitrise ou similares) (desejável)- Criação e manutenção de Design Systems / bibliotecas de componentes compartilhadas (desejável)- Código nativo (Swift/Kotlin) ou pontes nativas (Turbomodules, JSI, ",
+   "careerPageName": "VENHA SER #SANGUELARANJA 🧡🚀",
+   "careerPageLogo": "https://attachments.gupy.io/production/companies/50527/career/117226/images/2022-12-05_17-18_logo.png",
+   "careerPageUrl": "",
+   "type": "vacancy_type_temporary",
+   "publishedDate": "2026-10-26T13:04:12.591Z",
+   "workplaceType": "remote",
+   "city": "",
+   "state": "",
+   "jobUrl": "https://fcamara.gupy.io/job/eyJqb2JJZCI6MTI3NzY1NjQsInNvdXJjZSI6Imd1cHlfcG9ydGFsIn0=?jobBoardSource=gupy_portal",
+   "badges": {
+    "friendlyBadge": true,
+    "isPWD": true
+   },
+   "disabilities": true
+  },
+  {
+   "id": 12754502,
+   "name": "DESENVOLVEDOR FULLSTACK SR - JAVA/REACT",
+   "applicationDeadline": "2026-11-16T00:00:00.000Z",
+   "description": "\nNa Stefanini, acreditamos no poder da colaboração. Co-criamos soluções inovadoras em parceria com nossos clientes, combinando tecnologia de ponta, inteligência artificial e a criatividade humana. Estamos na vanguarda da resolução de problemas de negócios, proporcionando impacto real em escala global.Ao se juntar à Stefanini, você se torna parte de uma jornada global de transformação. Estamos empenhados em criar impacto positivo não apenas nos negócios, mas também na vida de nossos colaboradores. Se você procura uma oportunidade de crescimento profissional em uma empresa que valoriza inovação, respeito, autonomia e parceria, você encontra aqui!Junte-se a nós e seja parte da mudança!Modelo de trabalho: Híbrido - SIG, Brasília/DF#LI-KS1#LI-HYBRIDResponsabilidades e atribuições\nDesenvolver, implementar e manter aplicações utilizando Java 21 ou superior, com Quarkus e/ou Spring Boot.Projetar, desenvolver, expor e consumir APIs REST, além de atuar na integração com serviços e sistemas existentes.Implementar regras de negócio e soluções utilizando recursos do ecossistema Java, incluindo Streams, CDI ou Spring DI e Apache CXF.Desenvolver e manter interfaces front-end utilizando React, JavaScript e TypeScript.Implementar integrações com ferramentas de Inteligência Artificial (IA), visando otimizar processos e aprimorar soluções de software.Desenvolver e manter aplicações integradas, garantindo a comunicação eficiente entre os componentes front-end e back-end.Participar da implantação, evolução e manutenção de sistemas, contribuindo para a qualidade, o desempenho e a confiabilidade das aplicações.\n\n\n\nRequisitos e qualificaçõesO que precisamos que você tenha de conhecimento:Ensino superior completo em Ciência da Computação, Análise de Sistemas, Sistemas de Informação ou áreas correlatas.Experiência em projetos de implantação e desenvolvimento de sistemas.Conhecimento em Java 21 ou superior, especialmente na API Streams, CDI ou Spring DI e Apache CXF.Experiência com Quarkus e/",
+   "careerPageName": "Stefanini Group",
+   "careerPageLogo": "https://attachments.gupy.io/production/companies/39703/career/84556/images/2024-10-08_17-35_companyLogoUrl.png",
+   "careerPageUrl": "",
+   "type": "vacancy_type_effective",
+   "publishedDate": "2026-10-21T18:56:20.720Z",
+   "workplaceType": "hybrid",
+   "city": "Brasília",
+   "state": "Distrito Federal",
+   "jobUrl": "https://stefanini.gupy.io/job/eyJqb2JJZCI6MTI3NTQ1MDIsInNvdXJjZSI6Imd1cHlfcG9ydGFsIn0=?jobBoardSource=gupy_portal",
+   "badges": {
+    "friendlyBadge": true,
+    "isPWD": true
+   },
+   "disabilities": true
+  },
+  {
+   "id": 12756219,
+   "name": "Desenvolvedor Especialista Frontend React Native",
+   "applicationDeadline": "2026-12-19T00:00:00.000Z",
+   "description": "A Supergasbras é uma empresa do grupo holandês SHV Energy, líder mundial na distribuição de Gás liquefeito de Petróleo (GLP), com mais de 100 anos de experiência. Nosso negócio é levar energia limpa e eficiente para milhões de brasileiros, seja nas suas casas, comércios, indústrias ou agronegócio. Os mais de 76 anos de atuação no Brasil nos posiciona como uma das principais distribuidoras nacionais de GLP - comercializamos cerca de 1,5 milhão de toneladas do produto por ano com aproximadamente 20% de participação de mercado.Desenvolvemos uma série de projetos com foco em transformação digital, experiência do cliente, inovação e desenvolvimento sustentável do negócio. Nossa estratégia é conseguir através da confiança e integridade, ser a melhor empresa de Energia do Brasil para nossos clientes, parceiros, colaboradores e acionistas, com responsabilidade socioambiental.Diversidade e inclusão é uma prioridade de negócios para a Supergasbras. Valorizamos e acreditamos no desenvolvimento de pessoas, tanto no contexto profissional como pessoal, tendo como estratégia a equidade de gênero, inclusão de pessoas com deficiência, respeito a todas as orientações sexuais e luta contra a discriminação racial nas diferentes camadas da sociedade.Ser diverso é ser Super!&nbsp;&nbsp;Responsabilidades e atribuiçõesObjetivo do CargoEstamos em busca de um desenvolvedor especialista Frontend React Native para integrar nossa equipe de Tecnologia e Transformação Digital.O candidato ideal deverá contribuir com experiência sólida em desenvolvimento de aplicativos híbridos e interfaces de usuário responsivas e dinâmicas utilizando React Native, aplicando entendimento de conceitos de arquitetura de aplicativos.\n\nResponsabilidades do Cargo\nDesenvolver e manter aplicativos e interfaces de usuário responsivas utilizando React.Colaborar com designers e outros desenvolvedores para traduzir requisitos de design em código funcional.Implementar práticas de desenvolvimento ágil.Realizar testes frontend ",
+   "careerPageName": "Supergasbras",
+   "careerPageLogo": "https://attachments.gupy.io/production/companies/579/career/677/images/2020-09-04_15-10_logo.png",
+   "careerPageUrl": "",
+   "type": "vacancy_type_effective",
+   "publishedDate": "2026-10-20T19:43:32.994Z",
+   "workplaceType": "hybrid",
+   "city": "Rio de Janeiro",
+   "state": "Rio de Janeiro",
+   "jobUrl": "https://supergasbras.gupy.io/job/eyJqb2JJZCI6MTI3NTYyMTksInNvdXJjZSI6Imd1cHlfcG9ydGFsIn0=?jobBoardSource=gupy_portal",
+   "badges": {
+    "friendlyBadge": true,
+    "isPWD": true
+   },
+   "disabilities": true
+  },
+  {
+   "id": 12555252,
+   "name": "SR Developer Analyst (React Native)",
+   "applicationDeadline": "2026-12-10T00:00:00.000Z",
+   "description": "En Topaz, no solo creamos tecnología. Transformamos el futuro del mercado financiero. 🚀Somos un equipo #Multi de protagonistas que convierten ideas en soluciones de impacto. En nuestro Topaz Team, fomentamos un ambiente de colaboración real donde tu curiosidad se premia y tu potencial se expande, aprendiendo de los mejores para resolver desafíos complejos.¿Estás listo/a para ser protagonista de esta evolución? ¡Queremos conocerte!\n\nResponsabilidades e atribuiçõesTu Rol como Protagonista de la Transformación:Representar al equipo en discusiones técnicas con clientes, líderes de equipo, producto, diseño y todas las demás partes interesadas para desarrollar arquitectura y software de alta calidad, siendo capaz de crear y seguir estándares que serán utilizados por todos. Creando y evolucionando el ciclo de la vida de desarrollo de software (SDLC) con calidad, eficiencia y seguridad.Analizar las demandas de los clientes (internos o externos), evaluando la complejidad, proponiendo soluciones y realizando estimaciones de esfuerzo.Brindar soporte y apoyo a los stakeholders en caso de dudas y problemas con el software.Crear y mantener la documentación necesaria sobre el software.Verificar el funcionamiento de los productos de software. Analizar la estructura tecnológica de funcionamiento de productos software existentes, identificando posibles mejoras.Construir y mantener aplicaciones móviles robustas y escalables con React Native, garantizando una experiencia de usuario excepcional.Implementar funcionalidades de vanguardia utilizando las mejores prácticas de desarrollo (componentes funcionales, hooks, context, navegación, etc.)Integrar las app con APIs REST (y potencialmente GraphQL y websockets) gestionando notificaciones push y otras tecnologías claves.Colaborar en la creación de animaciones, optimización de memoria y performance en dispositivos móviles.Diseñar e implementar pruebas unitarias y end-to-end para asegurar la calidad del código.Participar activamente en revi",
+   "careerPageName": "topazlatam",
+   "careerPageLogo": "https://attachments.gupy.io/production/companies/42212/career/89869/images/2024-09-24_15-10_companyLogoUrl.jpg",
+   "careerPageUrl": "",
+   "type": "vacancy_type_effective",
+   "publishedDate": "2026-10-16T14:35:56.569Z",
+   "workplaceType": "hybrid",
+   "city": "Bogotá, D.c.",
+   "state": "",
+   "jobUrl": "https://topaz.gupy.io/job/eyJqb2JJZCI6MTI1NTUyNTIsInNvdXJjZSI6Imd1cHlfcG9ydGFsIn0=?jobBoardSource=gupy_portal",
+   "disabilities": true
+  },
+  {
+   "id": 12691103,
+   "name": "DESENVOLVEDOR FULL STACK | NODE.JS | REACT",
+   "applicationDeadline": "2026-12-06T00:00:00.000Z",
+   "description": "Com o propósito de levar emoção à vida das pessoas, a La Moda busca profissionais que têm metas arrojadas e sonham alto, que são obcecados pelos detalhes em busca da perfeição, que admiram a inteligência de quem quer aprender sempre, que envolvem as pessoas para criar coesão e que todos os dias fazem o trivial de um jeito diferente, surpreendendo, pois têm a ousadia de ir além.Todas as nossas vagas também são dedicadas para pessoas com deficiência.&nbsp;Responsabilidades e atribuiçõesResponsável por desenvolver, manter e evoluir aplicações, garantindo a qualidade, performance, segurança e escalabilidade das soluções. Atua na construção e integração de APIs, modelagem e consumo de bancos de dados, implementação de novas funcionalidades e sustentação dos sistemas existentes, contribuindo para a estabilidade e evolução dos produtos digitais da empresa.Trabalha em parceria com equipes multidisciplinares, como Produto, UX/UI, Dados e demais desenvolvedores, participando da análise de requisitos, definição de soluções técnicas, revisão de código e melhoria contínua dos processos de desenvolvimento. Também é responsável por identificar oportunidades de otimização, propor melhorias na arquitetura das aplicações e apoiar a resolução de problemas técnicos, sempre seguindo as melhores práticas de engenharia de software e metodologias ágeis.Principais ResponsabilidadesDesenvolver, manter e evoluir aplicações backend utilizando Node.js e \nfrontend utilizando React, garantindo qualidade, performance e escalabilidade das soluções.Projetar, desenvolver e sustentar APIs e integrações com sistemas internos e serviços de terceiros.Implementar novas funcionalidades, realizar correções de bugs e atuar na melhoria contínua dos sistemas existentes.Participar da análise de requisitos e da definição de soluções técnicas alinhadas às necessidades do negócio.Garantir a qualidade do código por meio de testes, revisões de código e adoção de boas práticas de desenvolvimento.Realizar modelagem e ",
+   "careerPageName": "La Moda",
+   "careerPageLogo": "https://attachments.gupy.io/production/companies/864/career/1174/images/2024-01-19_14-50_companyLogoUrl.jpg",
+   "careerPageUrl": "",
+   "type": "vacancy_legal_entity",
+   "publishedDate": "2026-10-13T16:44:22.797Z",
+   "workplaceType": "remote",
+   "city": "",
+   "state": "",
+   "jobUrl": "https://lamoda.gupy.io/job/eyJqb2JJZCI6MTI2OTExMDMsInNvdXJjZSI6Imd1cHlfcG9ydGFsIn0=?jobBoardSource=gupy_portal",
+   "disabilities": true
+  },
+  {
+   "id": 10939233,
+   "name": "Desenvolvedor Full Stack (Phyton & React)",
+   "applicationDeadline": "2027-12-31T00:00:00.000Z",
+   "description": "Estamos em busca de um Desenvolvedor Full Stack que tenha forte domínio em arquitetura de banco de dados e experiência no desenvolvimento de aplicações modernas utilizando React no frontend e Python no backend.Procuramos alguém que vá além da implementação básica de código: um profissional capaz de pensar a estrutura dos dados, projetar sistemas escaláveis e utilizar ferramentas de IA para aumentar a produtividade no desenvolvimento.Aqui, processos existem, mas não são engessados: eles evoluem conforme a empresa cresce. Valorizamos pessoas que se adaptam bem a mudanças, aprendem rápido e têm disposição para construir, testar, errar e melhorar continuamente.Responsabilidades e atribuiçõesNosso Desenvolvedor Full Stack será responsável por projetar e evoluir a arquitetura de bancos de dados da plataforma, garantindo organização, escalabilidade e alta performance no armazenamento e processamento de dados. Atuará no desenvolvimento de aplicações modernas, trabalhando tanto no frontend com React quanto no backend com Python, contribuindo para a construção e evolução contínua das funcionalidades do produto.Também será responsável por modelar, implementar e manter bancos de dados PostgreSQL e MongoDB, assegurando consistência, eficiência e boas práticas na estrutura dos dados. No dia a dia, desenvolverá e manterá APIs robustas e escaláveis, apoiando a integração entre diferentes serviços e garantindo a estabilidade da aplicação.Além disso, participará ativamente da evolução da arquitetura do sistema e das práticas de engenharia do time, contribuindo para a melhoria contínua da qualidade técnica do produto. Espera-se que utilize ferramentas de inteligência artificial no processo de desenvolvimento, acelerando tarefas como geração, revisão e otimização de código, aumentando a produtividade e eficiência do time.Requisitos e qualificaçõesExperiências e fundamentos:Experiência sólida como Desenvolvedor Full Stack;Forte conhecimento em arquitetura e modelagem de banco de dados;E",
+   "careerPageName": "PipeImob",
+   "careerPageLogo": "https://attachments.gupy.io/production/companies/76300/career/189958/images/2024-10-02_19-22_companyLogoUrl.png",
+   "careerPageUrl": "",
+   "type": "vacancy_type_autonomous",
+   "publishedDate": "2026-03-04T19:11:23.396Z",
+   "workplaceType": "hybrid",
+   "city": "São Paulo",
+   "state": "São Paulo",
+   "jobUrl": "https://pipeimob.gupy.io/job/eyJqb2JJZCI6MTA5MzkyMzMsInNvdXJjZSI6Imd1cHlfcG9ydGFsIn0=?jobBoardSource=gupy_portal",
+   "disabilities": true
+  },
+  {
+   "id": 9186882,
+   "name": "Banco de Talentos | Desenvolvedor Fullstack Sênior (Node/React)",
+   "applicationDeadline": null,
+   "description": "A FCamara é uma consultoria de tecnologia que atua em diversos segmentos do mercado, como varejo, saúde, financeiro, mobilidade, entre outros. Trabalhamos lado a lado com grandes empresas, desenvolvendo soluções inovadoras e impulsionando a transformação digital.Estamos em constante expansão e, por isso, mantemos nosso Banco de Talentos sempre aberto para profissionais de destaque!No momento, estamos recebendo currículos para oportunidades de Desenvolvedor(a) Fullstack Sênior, com foco em Node JS e React JS Temos diversas vagas disponíveis neste perfil, e ao se cadastrar, seu currículo será analisado com prioridade para estas posições.Responsabilidades e atribuiçõesAtuar de forma colaborativa com times multidisciplinares, promovendo uma comunicação clara, empática e eficiente entre áreas de produto, design e engenharia.Liderar tecnicamente projetos de backend, apoiando decisões estratégicas e compartilhando conhecimento com desenvolvedores menos experientes.Ser protagonista na identificação e resolução de problemas, com postura proativa e foco em soluções sustentáveis.Demonstrar responsabilidade e autonomia na gestão de demandas, prazos e prioridades, contribuindo para o bom andamento do time.Participar ativamente de cerimônias ágeis (Daily, Planning, Review, Retrospective), com mindset voltado à melhoria contínua e ao trabalho em equipe.Manter uma postura aberta a feedbacks e à evolução constante, incentivando a cultura de aprendizado dentro do time.Requisitos e qualificaçõesExperiência sólida com Node.js no desenvolvimento de aplicações backend, utilizando frameworks como Express.js, NestJS ou equivalentes.Forte domínio em React.js para desenvolvimento frontend, com conhecimento em hooks, contexto, roteamento e componentização escalável.Conhecimento em TypeScript no backend e frontend.Experiência na construção e consumo de APIs RESTfulVivência com testes automatizados, utilizando ferramentas como Jest, React Testing Library, Mocha, entre outras.Experiência com ban",
+   "careerPageName": "VENHA SER #SANGUELARANJA 🧡🚀",
+   "careerPageLogo": "https://attachments.gupy.io/production/companies/50527/career/117226/images/2022-12-05_17-18_logo.png",
+   "careerPageUrl": "",
+   "type": "vacancy_type_talent_pool",
+   "publishedDate": "2025-05-19T13:56:56.407Z",
+   "workplaceType": "remote",
+   "city": "",
+   "state": "",
+   "jobUrl": "https://fcamara.gupy.io/job/eyJqb2JJZCI6OTE4Njg4Miwic291cmNlIjoiZ3VweV9wb3J0YWwifQ==?jobBoardSource=gupy_portal",
+   "badges": {
+    "friendlyBadge": true,
+    "isPWD": true
+   },
+   "disabilities": true
+  },
+  {
+   "id": 4073543,
+   "name": "Desenvolvedor Frontend Mobile Pleno - React Native",
+   "applicationDeadline": null,
+   "description": "Para a posição de DESENVOLVEDOR FRONTEND MOBILE PL, buscamos um profissional aderente à nossa cultura e que tenha senso de dono para compor times de alta performance.Responsabilidades e atribuições- Analisar demandas, implementar o código, testar e validar as entregas;- Fazer revisões de códigos dos demais integrantes do time, visando garantir a integridade funcional dos sistemas;- Utilizar o GIT como ferramenta de versionamento, respeitando os padrões de commit e nomenclatura de branches;- Realizar tarefas e participar de cerimônias utilizando metodologias ágeis como Scrum, Kanban ou outros;- Produzir documentação e mante-la atualizada, garantindo a integridade da arquitetura do sistema;- Desenvolver aplicativos responsivos;- Consumir APIs dos Backends;- Criar testes unitários.Requisitos e qualificações- React Native- Typescript- Styled Components- Prettier/eslint- Storybook- Criação de design system- Appcenter/CodepushSeria legal você também conhecer:- Testes end-to-end- Expo- Padrões de projetos",
+   "careerPageName": "Q2 bank",
+   "careerPageLogo": "https://attachments.gupy.io/production/companies/30166/career/66802/images/2022-05-19_19-41_logo.png",
+   "careerPageUrl": "",
+   "type": "vacancy_type_autonomous",
+   "publishedDate": "2023-02-09T11:48:26.051Z",
+   "workplaceType": "remote",
+   "city": "Franca",
+   "state": "São Paulo",
+   "jobUrl": "https://q2bank&66802&inactive.gupy.io/job/eyJqb2JJZCI6NDA3MzU0Mywic291cmNlIjoiZ3VweV9wb3J0YWwifQ==?jobBoardSource=gupy_portal",
+   "disabilities": true
+  }
+ ],
+ "pagination": {
+  "total": 32,
+  "limit": 100,
+  "offset": 0
+ }
+}

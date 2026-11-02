@@ -14,8 +14,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen">
       <header className="border-b border-zinc-200 dark:border-zinc-800">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-3">
-          <nav className="flex items-center gap-6 text-sm">
+        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-6 py-3">
+          {/* flex-wrap: com 5 links o cabeçalho passava de 375 px e criava rolagem horizontal */}
+          <nav className="flex flex-wrap items-center gap-x-5 gap-y-1 text-sm">
             <Link href="/dashboard" className="font-semibold text-emerald-600">
               JobPilot
             </Link>
@@ -36,6 +37,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
             >
               Currículo
+            </Link>
+            <Link
+              href="/vagas"
+              className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
+            >
+              Vagas
             </Link>
           </nav>
 

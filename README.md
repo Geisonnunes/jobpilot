@@ -77,6 +77,20 @@ docker-compose.yml     # Postgres local
 | `Application` | Candidatura. Única por usuário + vaga; `approvedAt` registra a aprovação humana |
 | `ApplicationEvent` | Histórico de mudanças de status |
 
+## Coleta de vagas (Fase 2)
+
+```bash
+npm run scan -- --source=gupy|remotive|all [--force]   # coleta pela linha de comando
+npm test                                               # testes (vitest), sem acesso à rede
+```
+
+- Fontes: Gupy e Remotive (APIs públicas) e vagas coladas à mão em `/vagas/nova`. Nada de scraping.
+- A busca vem do seu perfil (cargos + principais tecnologias). Cada fonte respeita `minIntervalMinutes` e
+  `requestDelayMs` (o Remotive pede no máximo ~4 consultas por dia). `--force` ignora o intervalo mínimo.
+- Código portado do Career Ops (MIT): veja `THIRD_PARTY_NOTICES.md`.
+- Só para desenvolvimento: com `JOBPILOT_RECORD_DIR=<pasta>` (por exemplo em `.env.local`) as respostas cruas das
+  fontes são gravadas nessa pasta, para criar fixtures de teste.
+
 ## Regras do projeto
 
 1. **Sem envio automático.** O sistema prepara; o usuário revisa e envia.

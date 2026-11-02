@@ -20,6 +20,7 @@ export interface NormalizedJob {
   url: string;
   title: string;
   company: string;
+  /** Pode vir em HTML da fonte; a camada de ingestão converte para texto puro antes de salvar. */
   description: string;
   location?: string;
   city?: string;
@@ -36,10 +37,16 @@ export interface NormalizedJob {
 }
 
 export interface ConnectorContext {
-  /** fetch com timeout, retry e respeito a Retry-After */
+  /**
+   * fetch com timeout, retry e respeito a Retry-After.
+   * Só devolve respostas 2xx: qualquer outro status lança `HttpError`.
+   */
   fetch: (url: string, init?: RequestInit) => Promise<Response>;
   /** pausa entre requisições, conforme JobSource.requestDelayMs */
   sleep: (ms: number) => Promise<void>;
+  /** Intervalo mínimo entre requisições (JobSource.requestDelayMs). */
+  requestDelayMs: number;
+  /** `meta.level === "warn"` marca problemas parciais; a coleta vira PARTIAL. */
   log: (message: string, meta?: Record<string, unknown>) => void;
   signal?: AbortSignal;
 }
@@ -47,5 +54,7 @@ export interface ConnectorContext {
 export interface JobConnector {
   /** igual a JobSource.slug */
   slug: string;
+  /** Hosts que este conector pode chamar (https apenas). Aceita "*.exemplo.com". */
+  allowedHosts: readonly string[];
   search(query: ConnectorQuery, ctx: ConnectorContext): Promise<NormalizedJob[]>;
 }
