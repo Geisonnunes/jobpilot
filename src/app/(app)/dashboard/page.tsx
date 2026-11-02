@@ -30,7 +30,7 @@ async function DashboardContent() {
   const steps: { label: string; done: boolean; href?: string }[] = [
     { label: "Fazer login", done: true },
     { label: "Preencher o perfil", done: Boolean(profile), href: "/perfil" },
-    { label: "Cadastrar o currículo", done: resumeCount > 0 },
+    { label: "Cadastrar o currículo", done: resumeCount > 0, href: "/curriculo" },
   ];
 
   return (

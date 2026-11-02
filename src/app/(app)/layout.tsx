@@ -31,6 +31,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             >
               Perfil
             </Link>
+            <Link
+              href="/curriculo"
+              className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
+            >
+              Currículo
+            </Link>
           </nav>
 
           <Suspense fallback={<div className="h-7 w-24 animate-pulse rounded bg-zinc-100 dark:bg-zinc-800" />}>
