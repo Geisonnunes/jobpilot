@@ -1,0 +1,446 @@
+// JobPilot — schema inicial (Fase 1)
+// Modelo baseado na auditoria do Career Ops, adaptado para Postgres + multiusuário.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─────────────────────────────────────────────
+// Autenticação (compatível com Auth.js / NextAuth)
+// ─────────────────────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts           Account[]
+  sessions           Session[]
+  profile            CandidateProfile?
+  resumes            Resume[]
+  matches            JobMatch[]
+  applications       Application[]
+  generatedDocuments GeneratedDocument[]
+  aiUsages           AiUsage[]
+  manualPostings     JobPosting[]        @relation("ManualPostings")
+
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// ─────────────────────────────────────────────
+// Perfil e currículo
+// ─────────────────────────────────────────────
+
+enum Seniority {
+  INTERN
+  JUNIOR
+  MID
+  SENIOR
+  LEAD
+}
+
+enum WorkMode {
+  REMOTE
+  HYBRID
+  ONSITE
+}
+
+model CandidateProfile {
+  id     String @id @default(cuid())
+  userId String @unique
+
+  headline        String?
+  country         String     @default("BR")
+  city            String?
+  state           String?
+  seniority       Seniority  @default(JUNIOR)
+  targetRoles     String[] // ex.: ["Desenvolvedor Front-end", "Front-end Developer"]
+  skills          String[] // ex.: ["React", "TypeScript", "Next.js"]
+  workModes       WorkMode[] @default([REMOTE, HYBRID])
+  languages       Json? // ex.: [{ "lang": "en", "level": "basic" }]
+  salaryMin       Int? // em centavos, mensal
+  salaryCurrency  String     @default("BRL")
+  linkedinUrl     String?
+  githubUrl       String?
+  portfolioUrl    String?
+  // Score mínimo (1.0–5.0) para o sistema recomendar a candidatura
+  minMatchScore   Decimal    @default(4.0) @db.Decimal(2, 1)
+  // Palavras que descartam a vaga (ex.: "Sênior", "PHP")
+  excludeKeywords String[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("candidate_profiles")
+}
+
+model Resume {
+  id        String  @id @default(cuid())
+  userId    String
+  label     String // ex.: "CV base – Front-end"
+  version   Int     @default(1)
+  isPrimary Boolean @default(false)
+
+  rawText     String  @db.Text // texto extraído / colado
+  structured  Json? // CV estruturado (experiências, formação, projetos…)
+  fileUrl     String? // PDF original, se houver
+  contentHash String // detecta reenvio do mesmo CV
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  matches            JobMatch[]
+  generatedDocuments GeneratedDocument[]
+  applications       Application[]
+
+  @@unique([userId, label, version])
+  @@index([userId, isPrimary])
+  @@map("resumes")
+}
+
+// ─────────────────────────────────────────────
+// Vagas: fontes, coletas e anúncios
+// ─────────────────────────────────────────────
+
+enum SourceKind {
+  PUBLIC_API // ex.: Gupy, Remotive
+  ATS // ex.: Greenhouse, Lever, Workable
+  RSS
+  MANUAL // usuário colou URL/texto (LinkedIn, Indeed…)
+}
+
+model JobSource {
+  id                 String     @id @default(cuid())
+  slug               String     @unique // "gupy", "remotive", "manual"
+  name               String
+  kind               SourceKind
+  baseUrl            String?
+  enabled            Boolean    @default(true)
+  // Intervalo mínimo entre coletas e pausa entre requisições
+  minIntervalMinutes Int        @default(360)
+  requestDelayMs     Int        @default(750)
+  config             Json? // parâmetros do conector (palavras-chave, filtros)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  postings JobPosting[]
+  scanRuns ScanRun[]
+
+  @@map("job_sources")
+}
+
+enum ScanStatus {
+  RUNNING
+  SUCCESS
+  PARTIAL
+  FAILED
+}
+
+model ScanRun {
+  id         String     @id @default(cuid())
+  sourceId   String
+  status     ScanStatus @default(RUNNING)
+  query      Json? // filtros usados nesta coleta
+  startedAt  DateTime   @default(now())
+  finishedAt DateTime?
+
+  fetchedCount   Int   @default(0)
+  newCount       Int   @default(0)
+  updatedCount   Int   @default(0)
+  duplicateCount Int   @default(0)
+  errorCount     Int   @default(0)
+  errors         Json? // [{ message, url?, at }]
+
+  source JobSource @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+
+  @@index([sourceId, startedAt])
+  @@map("scan_runs")
+}
+
+enum PostingStatus {
+  OPEN
+  CLOSED // detectada como encerrada (liveness)
+  UNKNOWN
+}
+
+model JobPosting {
+  id         String  @id @default(cuid())
+  sourceId   String
+  externalId String? // id da vaga na fonte, quando existir
+
+  // URL canônica (sem parâmetros de rastreamento): base da deduplicação
+  canonicalUrl String @unique
+  originalUrl  String
+  // Hash de empresa+título+descrição normalizados: detecta repostagens/cópias
+  contentHash  String
+
+  title          String
+  company        String
+  description    String     @db.Text
+  location       String?
+  city           String?
+  state          String?
+  country        String?    @default("BR")
+  workMode       WorkMode?
+  seniority      Seniority?
+  salaryMin      Int? // centavos
+  salaryMax      Int?
+  salaryCurrency String?
+  employmentType String? // CLT, PJ, estágio…
+  tags           String[]
+  publishedAt    DateTime?
+
+  status        PostingStatus @default(OPEN)
+  firstSeenAt   DateTime      @default(now())
+  lastSeenAt    DateTime      @default(now())
+  lastCheckedAt DateTime?
+
+  // Preenchido quando a vaga foi colada manualmente por um usuário
+  addedByUserId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  source       JobSource     @relation(fields: [sourceId], references: [id])
+  addedBy      User?         @relation("ManualPostings", fields: [addedByUserId], references: [id], onDelete: SetNull)
+  matches      JobMatch[]
+  applications Application[]
+
+  @@unique([sourceId, externalId])
+  @@index([contentHash])
+  @@index([status, lastSeenAt])
+  @@index([company])
+  @@map("job_postings")
+}
+
+// ─────────────────────────────────────────────
+// IA: compatibilidade, documentos e custo
+// ─────────────────────────────────────────────
+
+enum MatchRecommendation {
+  APPLY
+  MAYBE
+  SKIP
+}
+
+model JobMatch {
+  id        String @id @default(cuid())
+  userId    String
+  postingId String
+  resumeId  String
+
+  // Score global 1.0–5.0
+  score          Decimal             @db.Decimal(2, 1)
+  recommendation MatchRecommendation
+  // { cvMatch, goalAlignment, compensation, culture, redFlags } + justificativas
+  dimensions     Json
+  summary        String?             @db.Text
+  missingSkills  String[]
+  redFlags       String[]
+
+  promptVersion String
+  model         String
+  aiUsageId     String? @unique
+
+  createdAt DateTime @default(now())
+
+  user    User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  posting JobPosting @relation(fields: [postingId], references: [id], onDelete: Cascade)
+  resume  Resume     @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  aiUsage AiUsage?   @relation(fields: [aiUsageId], references: [id], onDelete: SetNull)
+
+  // Uma avaliação por (usuário, vaga, CV, versão do prompt): evita pagar duas vezes
+  @@unique([userId, postingId, resumeId, promptVersion])
+  @@index([userId, score])
+  @@map("job_matches")
+}
+
+enum DocumentType {
+  RESUME
+  COVER_LETTER
+  FORM_ANSWERS
+}
+
+model GeneratedDocument {
+  id            String       @id @default(cuid())
+  userId        String
+  resumeId      String // CV base usado como fonte de verdade
+  applicationId String?
+  type          DocumentType
+
+  content         String   @db.Text // Markdown/HTML gerado
+  fileUrl         String? // PDF renderizado
+  // Resultado da checagem anti-invenção contra o CV base
+  factCheckPassed Boolean?
+  factCheckIssues Json?
+
+  promptVersion String
+  promptHash    String
+  model         String
+  aiUsageId     String? @unique
+
+  createdAt DateTime @default(now())
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resume      Resume       @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  application Application? @relation(fields: [applicationId], references: [id], onDelete: SetNull)
+  aiUsage     AiUsage?     @relation(fields: [aiUsageId], references: [id], onDelete: SetNull)
+
+  @@index([userId, type])
+  @@index([applicationId])
+  @@map("generated_documents")
+}
+
+enum AiTask {
+  PREFILTER
+  MATCH
+  RESUME
+  COVER_LETTER
+  FORM_ANSWERS
+  FACT_CHECK
+}
+
+model AiUsage {
+  id     String  @id @default(cuid())
+  userId String?
+  task   AiTask
+  model  String
+
+  inputTokens      Int
+  outputTokens     Int
+  cacheReadTokens  Int     @default(0)
+  cacheWriteTokens Int     @default(0)
+  // Custo em micro-dólares (1 USD = 1_000_000) para evitar float
+  costMicroUsd     BigInt  @default(0)
+  latencyMs        Int?
+  success          Boolean @default(true)
+  error            String?
+
+  createdAt DateTime @default(now())
+
+  user              User?              @relation(fields: [userId], references: [id], onDelete: SetNull)
+  jobMatch          JobMatch?
+  generatedDocument GeneratedDocument?
+
+  @@index([userId, createdAt])
+  @@index([task, createdAt])
+  @@map("ai_usages")
+}
+
+// ─────────────────────────────────────────────
+// Candidaturas (sempre com aprovação humana)
+// ─────────────────────────────────────────────
+
+enum ApplicationStatus {
+  SAVED // vaga salva
+  PREPARING // documentos sendo gerados
+  READY // pronto para revisão
+  APPLIED // usuário confirmou que enviou
+  SCREENING
+  INTERVIEW
+  OFFER
+  HIRED
+  REJECTED
+  WITHDRAWN
+  GHOSTED // sem resposta após o follow-up
+}
+
+model Application {
+  id        String            @id @default(cuid())
+  userId    String
+  postingId String
+  resumeId  String?
+  status    ApplicationStatus @default(SAVED)
+
+  // Aprovação humana obrigatória antes de marcar como APPLIED
+  approvedAt     DateTime?
+  appliedAt      DateTime?
+  nextFollowUpAt DateTime?
+  notes          String?   @db.Text
+  contactName    String?
+  contactEmail   String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  posting   JobPosting          @relation(fields: [postingId], references: [id], onDelete: Cascade)
+  resume    Resume?             @relation(fields: [resumeId], references: [id], onDelete: SetNull)
+  events    ApplicationEvent[]
+  documents GeneratedDocument[]
+
+  // Impede candidatura duplicada à mesma vaga
+  @@unique([userId, postingId])
+  @@index([userId, status])
+  @@index([nextFollowUpAt])
+  @@map("applications")
+}
+
+model ApplicationEvent {
+  id            String             @id @default(cuid())
+  applicationId String
+  fromStatus    ApplicationStatus?
+  toStatus      ApplicationStatus
+  note          String?            @db.Text
+  createdAt     DateTime           @default(now())
+
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@index([applicationId, createdAt])
+  @@map("application_events")
+}
